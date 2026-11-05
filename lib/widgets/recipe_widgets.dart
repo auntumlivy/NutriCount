@@ -25,7 +25,7 @@ class StatusChip extends StatelessWidget {
           BoxDecoration(color: warna, borderRadius: BorderRadius.circular(20)),
       child: Text(label,
           style: const TextStyle(
-              fontSize: 12,
+              fontSize: AppText.caption,
               fontWeight: FontWeight.w700,
               color: AppColors.textDark)),
     );
@@ -66,7 +66,7 @@ class RecipeCard extends StatelessWidget {
                       child: Text(resep.judul,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: serif(size: 17)),
+                          style: serif(size: AppText.body)),
                     ),
                     if (tampilStatus) ...[
                       const SizedBox(width: 8),
@@ -82,14 +82,14 @@ class RecipeCard extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text('oleh ${resep.namaPembuat}  ·  ±${resep.kalori} kkal',
                     style: const TextStyle(
-                        color: AppColors.textHint, fontSize: 13)),
+                        color: AppColors.textHint, fontSize: AppText.small)),
                 if (tampilStatus &&
                     resep.status == RecipeStatus.rejected &&
                     resep.alasanTolak.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Text('Alasan: ${resep.alasanTolak}',
                       style: const TextStyle(
-                          color: Color(0xFFB5524A), fontSize: 13)),
+                          color: Color(0xFFB5524A), fontSize: AppText.small)),
                 ],
               ],
             ),
@@ -128,7 +128,7 @@ class MenuTile extends StatelessWidget {
                 Expanded(
                   child: Text(label,
                       style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w600)),
+                          fontSize: AppText.body, fontWeight: FontWeight.w600)),
                 ),
                 const Icon(Icons.chevron_right, color: AppColors.textHint),
               ],

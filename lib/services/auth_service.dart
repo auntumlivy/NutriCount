@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 class AuthService {
   final _auth = FirebaseAuth.instance;
@@ -30,7 +31,7 @@ class AuthService {
         'nama': nama.trim(),
         'email': email.trim(),
         'tglLahir': tglLahir,
-        'role': 'user', // admin: ubah manual di Firebase Console
+        'role': 'user', // jadikan admin: ubah field role manual di Firebase Console
         'targetBerat': null,
         'dibuat': FieldValue.serverTimestamp(),
       }).timeout(const Duration(seconds: 8));

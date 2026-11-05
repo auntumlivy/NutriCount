@@ -1,17 +1,42 @@
-# testt
+# NutriCount
 
-A new Flutter project.
+Aplikasi Flutter untuk memantau BMI dan kalori harian, dengan rekomendasi makanan
+dan resep komunitas yang dikurasi admin.
 
-## Getting Started
+## Fitur
 
-This project is a starting point for a Flutter application.
+**Pengguna**
+- Hitung BMI dan kebutuhan kalori harian, simpan riwayatnya
+- Catat makanan per waktu makan (Sarapan, Lunch, Dinner, Snack)
+- Rekomendasi makanan sesuai kategori BMI. Ketuk kartu makanan untuk melihat kalori dan resep
+- Kirim resep sendiri (boleh dari internet, lengkap dengan link sumber) dan pantau statusnya
+- Login dan Sign Up
 
-A few resources to get you started if this is your first Flutter project:
+**Admin** (halaman login, sign up, dan beranda tersendiri)
+- Dashboard ringkasan resep
+- Setujui atau tolak resep kiriman pengguna, tarik atau hapus resep
+- Terbitkan resep langsung
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Menjalankan
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter pub add google_fonts fl_chart firebase_core firebase_auth cloud_firestore
+flutter run
+```
+
+Tanpa konfigurasi Firebase, aplikasi berjalan di **mode demo lokal**: pilih masuk sebagai
+pengguna atau admin, data tersimpan sementara di memori.
+
+Untuk Firebase dan cara menjadi admin, lihat [README_SETUP.md](README_SETUP.md).
+
+## Struktur
+
+```
+lib/
+  main.dart            titik masuk, memilih mode Firebase atau demo
+  theme.dart           warna dan skala ukuran font (AppText)
+  models/ services/    model data, penyimpanan (Firestore / lokal), auth
+  screens/             layar pengguna dan layar admin
+  widgets/ data/       komponen UI dan resep bawaan
+firestore.rules        aturan keamanan Firestore
+```

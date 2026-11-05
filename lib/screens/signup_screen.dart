@@ -72,13 +72,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
               children: [
                 Text('Create New\nAccount',
                     textAlign: TextAlign.center,
-                    style: serif(size: 36, color: AppColors.sageLight)),
+                    style: serif(size: AppText.hero, color: AppColors.sageLight)),
                 const SizedBox(height: 24),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Text('Already Registered? Log in here.',
                       style: serif(
-                          size: 16,
+                          size: AppText.body,
                           weight: FontWeight.w400,
                           color: AppColors.textHint)),
                 ),

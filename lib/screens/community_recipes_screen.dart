@@ -35,7 +35,7 @@ class _CommunityRecipesScreenState extends State<CommunityRecipesScreen> {
           elevation: 0,
           scrolledUnderElevation: 0,
           iconTheme: const IconThemeData(color: AppColors.textDark),
-          title: Text('Resep Komunitas', style: serif(size: 20)),
+          title: Text('Resep Komunitas', style: serif(size: AppText.section)),
           bottom: const TabBar(
             labelColor: AppColors.textDark,
             indicatorColor: AppColors.sageDark,

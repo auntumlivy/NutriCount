@@ -34,7 +34,7 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
               backgroundColor: Colors.white,
               elevation: 0,
               iconTheme: const IconThemeData(color: AppColors.textDark),
-              title: Text('Rekomendasi Makanan', style: serif(size: 20)),
+              title: Text('Rekomendasi Makanan', style: serif(size: AppText.section)),
             )
           : null,
       body: SafeArea(
@@ -59,7 +59,7 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                      child: Text('Rekomendasi Makanan', style: serif(size: 24)),
+                      child: Text('Rekomendasi Makanan', style: serif(size: AppText.title)),
                     ),
                   ),
                 if (!dipush)
@@ -119,8 +119,18 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
                           borderRadius: BorderRadius.circular(12)),
                       child: Text(info,
                           textAlign: TextAlign.center,
-                          style: serif(size: 13, weight: FontWeight.w400)),
+                          style: serif(size: AppText.small, weight: FontWeight.w400)),
                     ),
+                  ),
+                ),
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(24, 0, 24, 0),
+                    child: Text('Ketuk makanan untuk melihat resep dan kalorinya.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: AppColors.textHint,
+                            fontSize: AppText.small)),
                   ),
                 ),
                 SliverPadding(

@@ -1,11 +1,70 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function login() {
+      return request.auth != null;
+    }
+
+    // Admin = dokumen users/{uid} punya role == 'admin'.
+    // Role HANYA bisa diubah lewat Firebase Console (atau Admin SDK).
+    function isAdmin() {
+      return login() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid))
+          .data.get('role', 'user') == 'admin';
+    }
+
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
-      match /{sub=**} {
-        allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read: if login() && (request.auth.uid == uid || isAdmin());
+
+      // Daftar baru: role harus 'user' (atau kosong). Pendaftaran admin juga
+      // lewat sini, lalu pemilik aplikasi mengubah role di Console.
+      allow create: if login() && request.auth.uid == uid
+        && request.resource.data.get('role', 'user') == 'user';
+
+      // Update profil sendiri, tapi role tidak boleh berubah.
+      allow update: if login() && request.auth.uid == uid
+        && request.resource.data.get('role', 'user')
+           == resource.data.get('role', 'user');
+
+      // Subkoleksi data pribadi (ditulis eksplisit, bukan {sub=**},
+      // supaya tidak ikut membuka dokumen users/{uid} itu sendiri).
+      match /bmi_records/{id} {
+        allow read, write: if login() && request.auth.uid == uid;
       }
+      match /food_logs/{id} {
+        allow read, write: if login() && request.auth.uid == uid;
+      }
+      match /custom_foods/{id} {
+        allow read, write: if login() && request.auth.uid == uid;
+      }
+    }
+
+    // Resep komunitas
+    match /recipes/{id} {
+      // Semua user login boleh baca resep yang sudah disetujui;
+      // pembuat boleh baca punyanya; admin boleh baca semua.
+      allow read: if login() && (
+        resource.data.status == 'approved' ||
+        resource.data.uid == request.auth.uid ||
+        isAdmin()
+      );
+
+      // User biasa: hanya resep atas namanya sendiri, status wajib 'pending'.
+      // Admin: boleh menerbitkan resep langsung.
+      allow create: if login() && (
+        (request.resource.data.uid == request.auth.uid
+          && request.resource.data.status == 'pending')
+        || isAdmin()
+      );
+
+      // Hanya admin yang boleh menyetujui / menolak / mengedit.
+      allow update: if isAdmin();
+
+      // Pembuat boleh hapus resepnya selama belum disetujui; admin boleh semua.
+      allow delete: if isAdmin() ||
+        (login() && resource.data.uid == request.auth.uid
+          && resource.data.status != 'approved');
     }
   }
 }

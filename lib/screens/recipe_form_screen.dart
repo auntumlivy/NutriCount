@@ -8,7 +8,9 @@ import '../widgets/app_widgets.dart';
 
 /// Form user untuk mengirim resep. Setelah dikirim, status = menunggu admin.
 class RecipeFormScreen extends StatefulWidget {
-  const RecipeFormScreen({super.key});
+  /// true = admin menerbitkan resep langsung (tanpa menunggu persetujuan).
+  final bool adminMode;
+  const RecipeFormScreen({super.key, this.adminMode = false});
 
   @override
   State<RecipeFormScreen> createState() => _RecipeFormScreenState();
@@ -38,20 +40,26 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
     try {
       final u = await DataService.instance.getUser();
       final nama = ((u?['nama'] ?? '') as String).trim();
-      await DataService.instance
-          .submitRecipe(Recipe(
-            judul: _judul.text.trim(),
-            deskripsi: _deskripsi.text.trim(),
-            bahan: _baris(_bahan.text),
-            langkah: _baris(_langkah.text),
-            kalori: int.parse(_kalori.text.trim()),
-            sumberUrl: _sumber.text.trim(),
-            namaPembuat: nama.isEmpty ? 'Anonim' : nama,
-            dibuat: DateTime.now(),
-          ))
-          .timeout(const Duration(seconds: 15));
-      messenger.showSnackBar(const SnackBar(
-          content: Text('Resep terkirim. Menunggu persetujuan admin.')));
+      final resep = Recipe(
+        judul: _judul.text.trim(),
+        deskripsi: _deskripsi.text.trim(),
+        bahan: _baris(_bahan.text),
+        langkah: _baris(_langkah.text),
+        kalori: int.parse(_kalori.text.trim()),
+        sumberUrl: _sumber.text.trim(),
+        namaPembuat: widget.adminMode
+            ? 'Admin'
+            : (nama.isEmpty ? 'Anonim' : nama),
+        dibuat: DateTime.now(),
+      );
+      final aksi = widget.adminMode
+          ? DataService.instance.adminAddRecipe(resep)
+          : DataService.instance.submitRecipe(resep);
+      await aksi.timeout(const Duration(seconds: 15));
+      messenger.showSnackBar(SnackBar(
+          content: Text(widget.adminMode
+              ? 'Resep diterbitkan.'
+              : 'Resep terkirim. Menunggu persetujuan admin.')));
       nav.pop();
     } on TimeoutException {
       // Koneksi lambat: Firestore tetap mengirim saat sudah online.
@@ -90,7 +98,7 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
         children: [
           Text(label.toUpperCase(),
               style: serif(
-                  size: 13,
+                  size: AppText.small,
                   weight: FontWeight.w400,
                   color: AppColors.textHint,
                   spacing: 2)),
@@ -116,7 +124,8 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(color: AppColors.textDark),
-        title: Text('Kirim Resep', style: serif(size: 20)),
+        title: Text(widget.adminMode ? 'Tambah Resep (Admin)' : 'Kirim Resep',
+            style: serif(size: AppText.section)),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -126,9 +135,11 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                    'Resep akan dicek admin dulu sebelum tampil ke pengguna lain.',
-                    style: TextStyle(color: AppColors.textHint)),
+                Text(
+                    widget.adminMode
+                        ? 'Resep dari admin langsung tampil ke semua pengguna.'
+                        : 'Resep akan dicek admin dulu sebelum tampil ke pengguna lain.',
+                    style: const TextStyle(color: AppColors.textHint)),
                 const SizedBox(height: 20),
                 _isian('Judul resep', _judul,
                     hint: 'Contoh: Sup Ayam Sayur',
@@ -170,7 +181,7 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
                     }),
                 const SizedBox(height: 6),
                 PrimaryButton(
-                    label: 'Kirim untuk Ditinjau',
+                    label: widget.adminMode ? 'Terbitkan Resep' : 'Kirim untuk Ditinjau',
                     onPressed: _kirim,
                     loading: _loading),
               ],

@@ -115,7 +115,7 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Text('BMI', style: serif(size: 30))),
+            Center(child: Text('BMI', style: serif(size: AppText.display))),
             const SizedBox(height: 24),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -179,7 +179,7 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
             const SizedBox(height: 24),
             Row(
               children: [
-                Expanded(child: Text('Rekomendasi Makanan', style: serif(size: 17))),
+                Expanded(child: Text('Rekomendasi Makanan', style: serif(size: AppText.body))),
                 if (_kategori != null)
                   GestureDetector(
                     onTap: () => Navigator.push(
@@ -189,7 +189,7 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                               FoodRecommendationScreen(kategori: _kategori!)),
                     ),
                     child: Text('More>',
-                        style: serif(size: 16).copyWith(
+                        style: serif(size: AppText.body).copyWith(
                             decoration: TextDecoration.underline)),
                   ),
               ],
@@ -217,7 +217,7 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: serif(size: 16)),
+        Text(label, style: serif(size: AppText.body)),
         const SizedBox(height: 6),
         TextField(
           controller: c,
@@ -252,7 +252,7 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
   Widget _readonlyRow(String label, String value) {
     return Row(
       children: [
-        Expanded(child: Text(label, style: serif(size: 17))),
+        Expanded(child: Text(label, style: serif(size: AppText.body))),
         Container(
           width: 140,
           height: 44,
@@ -260,7 +260,7 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
           decoration: BoxDecoration(
               color: AppColors.fieldGrey,
               borderRadius: BorderRadius.circular(10)),
-          child: Text(value, style: const TextStyle(fontSize: 15)),
+          child: Text(value, style: const TextStyle(fontSize: AppText.body)),
         ),
       ],
     );

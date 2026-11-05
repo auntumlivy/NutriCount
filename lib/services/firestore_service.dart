@@ -91,6 +91,9 @@ class FirestoreService implements DataService {
   bool get adaAkun => true;
 
   @override
+  bool get bisaKeluar => true;
+
+  @override
   Future<void> keluar() => FirebaseAuth.instance.signOut();
 
   // ---------- USER ----------
@@ -222,4 +225,24 @@ class FirestoreService implements DataService {
 
   @override
   Future<void> deleteRecipe(String id) => _recipes.doc(id).delete();
+
+  // ---------- KHUSUS ADMIN ----------
+  @override
+  Stream<List<Recipe>> allRecipesStream() => _recipeStream(_recipes);
+
+  @override
+  Future<void> adminAddRecipe(Recipe r) => _recipes.add({
+        'judul': r.judul,
+        'deskripsi': r.deskripsi,
+        'bahan': r.bahan,
+        'langkah': r.langkah,
+        'kalori': r.kalori,
+        'sumberUrl': r.sumberUrl,
+        'uid': _uid,
+        'namaPembuat': r.namaPembuat,
+        'status': RecipeStatus.approved,
+        'alasanTolak': '',
+        'dibuat': Timestamp.now(),
+        'ditinjau': Timestamp.now(),
+      });
 }

@@ -1,21 +1,36 @@
-# NutriCount – Setup
+# NutriCount: Setup
 
-## Mode sekarang: LOKAL (tanpa Firebase, tanpa login)
-1. Ganti folder `lib/` project Flutter dengan isi zip ini.
-2. Di `pubspec.yaml` cukup butuh `google_fonts` dan `fl_chart`
-   (lihat `pubspec_dependencies.yaml`; paket firebase tidak dipakai di mode ini).
-3. `flutter pub get`, lalu `flutter run`.
-Catatan: data tersimpan di memori, jadi hilang saat aplikasi ditutup.
+## 1. Jalankan tanpa Firebase (mode demo)
+```
+flutter pub add google_fonts fl_chart firebase_core firebase_auth cloud_firestore
+flutter run
+```
+Layar pertama menawarkan **Masuk sebagai Pengguna** atau **Masuk sebagai Admin**.
+Data hanya di memori dan hilang saat aplikasi ditutup.
 
-## Nanti: mode Firebase (Login + Sign Up + database)
-1. Pastikan paket firebase di `pubspec.yaml` terpasang.
-2. Buat project Firebase: aktifkan Authentication (Email/Password) dan Firestore, tempel `firestore.rules`.
-3. `flutterfire configure` -> menghasilkan `lib/firebase_options.dart`.
-4. Pindahkan isi `lib/main_firebase.dart` ke `lib/main.dart` (atau `flutter run -t lib/main_firebase.dart`).
-5. Android: `minSdkVersion` minimal 23.
+## 2. Sambungkan Firebase (Login, Sign Up, database)
+1. Firebase Console: aktifkan **Authentication > Email/Password** dan buat **Firestore Database**.
+2. Firestore > **Rules**: tempel isi `firestore.rules`, lalu **Publish**.
+3. Di terminal (folder project):
+   ```
+   firebase login
+   dart pub global run flutterfire_cli:flutterfire configure
+   ```
+   Pilih project, centang Android. Jawab **yes** jika diminta menimpa `lib/firebase_options.dart`.
+4. Jalankan ulang app. Sekarang yang muncul layar **Login** pengguna. Tombol "Masuk sebagai Admin" ada di bawahnya.
 
-Struktur Firestore:
-- users/{uid}                    -> nama, email, tglLahir, targetBerat
-- users/{uid}/bmi_records/{id}   -> usia, gender, tinggi, berat, bmi, kategori, kalori, tanggal
-- users/{uid}/food_logs/{id}     -> nama, kalori, waktu, hari, tanggal
-- users/{uid}/custom_foods/{id}  -> nama, kalori, dibuat
+## 3. Menjadi admin
+1. Buka app, **Masuk sebagai Admin > Daftar** (atau daftar biasa lewat Sign Up).
+2. Firebase Console > Firestore > koleksi `users` > dokumen akunmu.
+3. Ubah field `role` dari `user` menjadi `admin`.
+4. Login lewat **Masuk sebagai Admin**. Akun yang belum `admin` akan ditolak.
+
+## Struktur Firestore
+- users/{uid}: nama, email, tglLahir, targetBerat, role (user/admin), mintaAdmin
+- users/{uid}/bmi_records, food_logs, custom_foods
+- recipes/{id}: judul, deskripsi, bahan[], langkah[], kalori, sumberUrl, uid, namaPembuat,
+  status (pending/approved/rejected), alasanTolak, dibuat, ditinjau
+
+## Alur resep
+Pengguna kirim resep (status `pending`) -> admin Setujui (tampil ke semua pengguna) atau Tolak
+(pengguna melihat alasannya di Resep Saya). Admin juga bisa menerbitkan resep langsung.

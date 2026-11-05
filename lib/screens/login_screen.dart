@@ -61,12 +61,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 32),
                   Text('NutriCount',
                       style: serif(
-                          size: 16,
+                          size: AppText.body,
                           weight: FontWeight.w400,
                           color: AppColors.textHint)),
                   const SizedBox(height: 8),
                   Text('Login',
-                      style: serif(size: 36, color: AppColors.sageLight)),
+                      style: serif(size: AppText.hero, color: AppColors.sageLight)),
                   const SizedBox(height: 28),
                   LabeledField(
                     label: 'Email',
@@ -90,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         MaterialPageRoute(builder: (_) => const SignUpScreen())),
                     child: Text('New here? Create an account',
                         style: serif(
-                            size: 16,
+                            size: AppText.body,
                             weight: FontWeight.w400,
                             color: AppColors.textHint)),
                   ),

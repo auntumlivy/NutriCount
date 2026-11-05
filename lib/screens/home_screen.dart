@@ -41,12 +41,12 @@ class _HomeScreenState extends State<HomeScreen> {
               return ListView(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
                 children: [
-                  Text('NutriCount', style: serif(size: 26)),
+                  Text('NutriCount', style: serif(size: AppText.title)),
                   const SizedBox(height: 24),
                   Center(
                     child: Column(
                       children: [
-                        Text('Skor BMI', style: serif(size: 18)),
+                        Text('Skor BMI', style: serif(size: AppText.subtitle)),
                         const SizedBox(height: 8),
                         StatCircle(
                           value:
@@ -62,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Column(
                         children: [
-                          Text('Kalori', style: serif(size: 18)),
+                          Text('Kalori', style: serif(size: AppText.subtitle)),
                           const SizedBox(height: 8),
                           StatCircle(
                               value: target == null ? '-' : '$target',
@@ -71,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       Column(
                         children: [
-                          Text('Sisa', style: serif(size: 18)),
+                          Text('Sisa', style: serif(size: AppText.subtitle)),
                           const SizedBox(height: 8),
                           StatCircle(
                             value: sisa == null ? '-' : '${sisa.abs()}',
@@ -111,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Row(
             children: [
-              Expanded(child: Text(waktu, style: serif(size: 18))),
+              Expanded(child: Text(waktu, style: serif(size: AppText.subtitle))),
               AddCircleButton(
                   onTap: () => showPilihMakananSheet(context, waktu: waktu)),
             ],

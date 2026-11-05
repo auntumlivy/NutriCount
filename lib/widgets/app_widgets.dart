@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme.dart';
+import 'food_detail_sheet.dart';
 
 /// Gaya teks serif seperti di wireframe.
 TextStyle serif({
@@ -41,7 +42,7 @@ class LabeledField extends StatelessWidget {
       children: [
         Text(label.toUpperCase(),
             style: serif(
-                size: 14,
+                size: AppText.small,
                 weight: FontWeight.w400,
                 color: AppColors.textHint,
                 spacing: 2.5)),
@@ -109,11 +110,12 @@ class StatCircle extends StatelessWidget {
         children: [
           Text(value,
               style: GoogleFonts.sourceSans3(
-                  fontSize: sub == null ? 26 : 22, color: Colors.black)),
+                  fontSize: sub == null ? AppText.title : AppText.section,
+                  color: Colors.black)),
           if (sub != null)
             Text(sub!,
                 style: GoogleFonts.sourceSans3(
-                    fontSize: 18, color: Colors.black)),
+                    fontSize: AppText.subtitle, color: Colors.black)),
         ],
       ),
     );
@@ -157,31 +159,38 @@ class FoodCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: size,
-          height: size,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-              color: AppColors.sageLight.withOpacity(0.55),
-              borderRadius: BorderRadius.circular(18)),
-          child: Text(emoji, style: TextStyle(fontSize: size * 0.42)),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: size,
-          child: Text(nama,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: serif(size: size < 110 ? 12 : 15)),
-        ),
-        if (kalori != null)
-          Text('±$kalori kkal',
-              style: const TextStyle(color: AppColors.textHint, fontSize: 13)),
-      ],
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: () =>
+          showFoodDetail(context, nama: nama, emoji: emoji, kalori: kalori),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: size,
+            height: size,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+                color: AppColors.sageLight.withOpacity(0.55),
+                borderRadius: BorderRadius.circular(18)),
+            child: Text(emoji, style: TextStyle(fontSize: size * 0.42)),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: size,
+            child: Text(nama,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: serif(
+                    size: size < 110 ? AppText.caption : AppText.body)),
+          ),
+          if (kalori != null)
+            Text('±$kalori kkal',
+                style: const TextStyle(
+                    color: AppColors.textHint, fontSize: AppText.small)),
+        ],
+      ),
     );
   }
 }

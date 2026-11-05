@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import 'data_service.dart';
 
@@ -33,17 +34,35 @@ class LocalService implements DataService {
     'email': '',
     'tglLahir': '',
     'targetBerat': null,
-    // Mode lokal = satu orang jadi user sekaligus admin, supaya alur
-    // kirim -> setujui bisa dites tanpa Firebase.
-    'role': 'admin',
+    'role': 'user',
   };
   final _userCtrl = StreamController<Map<String, dynamic>?>.broadcast();
+
+  /// Peran yang sedang "masuk" di mode demo: null (belum pilih), 'user', 'admin'.
+  static final ValueNotifier<String?> peran = ValueNotifier<String?>(null);
+
+  /// Mode demo: masuk tanpa Firebase sebagai pengguna atau admin.
+  void masukSebagai(String role) {
+    _user = {
+      ..._user,
+      'role': role,
+      if (role == 'admin') 'nama': 'Admin Demo',
+      if (role == 'admin') 'email': 'admin@demo.local',
+    };
+    _userCtrl.add(Map.of(_user));
+    peran.value = role;
+  }
 
   @override
   bool get adaAkun => false;
 
   @override
-  Future<void> keluar() async {}
+  bool get bisaKeluar => true;
+
+  @override
+  Future<void> keluar() async {
+    peran.value = null;
+  }
 
   // ---------- USER ----------
   @override
@@ -201,4 +220,16 @@ class LocalService implements DataService {
   @override
   Future<void> deleteRecipe(String id) async =>
       _recipes.set(_recipes.items.where((r) => r.id != id).toList());
+
+  // ---------- KHUSUS ADMIN ----------
+  @override
+  Stream<List<Recipe>> allRecipesStream() => _recipes.watch();
+
+  @override
+  Future<void> adminAddRecipe(Recipe r) async {
+    _recipes.set([
+      r.copyWith(id: _id(), uid: 'lokal', status: RecipeStatus.approved),
+      ..._recipes.items,
+    ]);
+  }
 }

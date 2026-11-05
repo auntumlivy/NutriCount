@@ -8,6 +8,9 @@ abstract class DataService {
   static DataService instance = LocalService();
 
   bool get adaAkun;
+
+  /// Tombol Keluar/Logout tersedia (Firebase: sign out, demo lokal: kembali ke pilihan peran).
+  bool get bisaKeluar;
   Future<void> keluar();
 
   Future<Map<String, dynamic>?> getUser();
@@ -46,4 +49,11 @@ abstract class DataService {
   Future<void> setRecipeStatus(String id, String status, {String alasan = ''});
 
   Future<void> deleteRecipe(String id);
+
+  // ---------- KHUSUS ADMIN ----------
+  /// Semua resep, semua status (untuk dashboard dan kelola resep admin).
+  Stream<List<Recipe>> allRecipesStream();
+
+  /// Admin menerbitkan resep langsung (status langsung "approved").
+  Future<void> adminAddRecipe(Recipe r);
 }

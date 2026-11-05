@@ -16,6 +16,18 @@ class AppColors {
   static const obesitas = Color(0xFFE6B3A8);
 }
 
+/// Skala ukuran font. Pakai ini supaya ukuran teks konsisten di semua layar.
+class AppText {
+  static const double caption = 12; // keterangan kecil
+  static const double small = 14; // teks pendukung
+  static const double body = 16; // teks utama
+  static const double subtitle = 18; // judul bagian
+  static const double section = 20; // judul AppBar
+  static const double title = 24; // judul layar
+  static const double display = 28; // angka besar
+  static const double hero = 36; // judul Login
+}
+
 ThemeData buildTheme() {
   final base = ThemeData(
     useMaterial3: true,
@@ -26,10 +38,16 @@ ThemeData buildTheme() {
     ),
     scaffoldBackgroundColor: Colors.white,
   );
+  final tt = GoogleFonts.sourceSans3TextTheme(base.textTheme).apply(
+    bodyColor: AppColors.textDark,
+    displayColor: AppColors.textDark,
+  );
   return base.copyWith(
-    textTheme: GoogleFonts.sourceSans3TextTheme(base.textTheme).apply(
-      bodyColor: AppColors.textDark,
-      displayColor: AppColors.textDark,
+    textTheme: tt.copyWith(
+      bodyLarge: tt.bodyLarge?.copyWith(fontSize: AppText.body),
+      bodyMedium: tt.bodyMedium?.copyWith(fontSize: AppText.body),
+      bodySmall: tt.bodySmall?.copyWith(fontSize: AppText.small),
+      labelLarge: tt.labelLarge?.copyWith(fontSize: AppText.body),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -48,7 +66,7 @@ ThemeData buildTheme() {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         textStyle: GoogleFonts.sourceSans3(
-            fontSize: 17, fontWeight: FontWeight.w700),
+            fontSize: AppText.body, fontWeight: FontWeight.w700),
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(

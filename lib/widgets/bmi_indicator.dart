@@ -35,11 +35,20 @@ class BmiIndicator extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: _row(
-            (i) => Text(_names[i],
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.visible,
-                softWrap: false,
-                style: serif(size: i == 1 ? 15 : 10)),
+            (i) {
+              final aktif = kat != null &&
+                  kat.toLowerCase() == _names[i].toLowerCase();
+              return Text(_names[i],
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.visible,
+                  softWrap: false,
+                  // Ukuran sama untuk semua label; kategori aktif dibedakan
+                  // lewat ketebalan dan warna, bukan ukuran.
+                  style: serif(
+                      size: AppText.caption,
+                      weight: aktif ? FontWeight.w700 : FontWeight.w400,
+                      color: aktif ? AppColors.textDark : AppColors.textHint));
+            },
             const SizedBox(width: 4),
           ),
         ),
@@ -84,7 +93,7 @@ class BmiIndicator extends StatelessWidget {
         if (bmi != null) ...[
           const SizedBox(height: 8),
           Text('BMI ${BmiUtils.fmt1(bmi!)} • $kat',
-              style: serif(size: 14, weight: FontWeight.w400)),
+              style: serif(size: AppText.small, weight: FontWeight.w400)),
         ],
       ],
     );

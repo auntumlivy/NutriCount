@@ -171,7 +171,7 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
               return Column(
                 children: [
                   Text('Pilih makanan • ${widget.waktu}',
-                      style: serif(size: 18)),
+                      style: serif(size: AppText.subtitle)),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _cari,
@@ -198,7 +198,7 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
                               return ListTile(
                                 contentPadding: EdgeInsets.zero,
                                 leading: Text(f.emoji,
-                                    style: const TextStyle(fontSize: 28)),
+                                    style: const TextStyle(fontSize: AppText.display)),
                                 title: Text(f.nama),
                                 subtitle: Text(
                                     '±${f.kalori} kkal${milikSendiri ? ' • buatanmu' : ''}'),

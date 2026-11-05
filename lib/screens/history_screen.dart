@@ -40,17 +40,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   return ListView(
                     padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
                     children: [
-                      Text('Riwayat BMI', style: serif(size: 26)),
+                      Text('Riwayat BMI', style: serif(size: AppText.title)),
                       const SizedBox(height: 22),
                       _beratCard(latest, target),
                       const SizedBox(height: 18),
                       _bmiCard(latest),
                       const SizedBox(height: 22),
-                      Text('Calories', style: serif(size: 20)),
+                      Text('Calories', style: serif(size: AppText.section)),
                       const SizedBox(height: 12),
                       _chart(logs, latest?.kalori),
                       const SizedBox(height: 24),
-                      Text('Catatan BMI', style: serif(size: 20)),
+                      Text('Catatan BMI', style: serif(size: AppText.section)),
                       const SizedBox(height: 8),
                       if (records.isEmpty)
                         const Padding(
@@ -80,7 +80,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Berat Badan', style: serif(size: 17)),
+          Text('Berat Badan', style: serif(size: AppText.body)),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -93,14 +93,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             ? '- kg'
                             : '${BmiUtils.fmtKg(latest.berat)} kg',
                         style: const TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.w700)),
+                            fontSize: AppText.title, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 4),
                     Text(
                         target == null
                             ? 'Target - kg'
                             : 'Target ${BmiUtils.fmtKg(target)} kg',
                         style: const TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.w700)),
+                            fontSize: AppText.title, fontWeight: FontWeight.w700)),
                   ],
                 ),
               ),
@@ -189,7 +189,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('BMI', style: serif(size: 18)),
+          Text('BMI', style: serif(size: AppText.subtitle)),
           const SizedBox(height: 10),
           BmiIndicator(bmi: latest?.bmi),
         ],
@@ -242,7 +242,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   reservedSize: 44,
                   interval: 500,
                   getTitlesWidget: (v, m) => Text(v.toInt().toString(),
-                      style: serif(size: 11, weight: FontWeight.w400)),
+                      style: serif(size: AppText.caption, weight: FontWeight.w400)),
                 ),
               ),
               bottomTitles: AxisTitles(
@@ -255,7 +255,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Text('${days[i].day}/${days[i].month}',
-                          style: const TextStyle(fontSize: 11)),
+                          style: const TextStyle(fontSize: AppText.caption)),
                     );
                   },
                 ),
@@ -272,7 +272,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     show: true,
                     alignment: Alignment.topCenter,
                     labelResolver: (_) => 'Target',
-                    style: serif(size: 12, weight: FontWeight.w400),
+                    style: serif(size: AppText.caption, weight: FontWeight.w400),
                   ),
                 ),
             ]),
@@ -309,7 +309,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               children: [
                 Text('BMI ${BmiUtils.fmt1(r.bmi)} • ${r.kategori}',
                     style: const TextStyle(
-                        fontWeight: FontWeight.w700, fontSize: 16)),
+                        fontWeight: FontWeight.w700, fontSize: AppText.body)),
                 Text(
                     '${BmiUtils.fmtTanggal(r.tanggal)} • ${BmiUtils.fmtKg(r.berat)} kg • ${BmiUtils.fmtKg(r.tinggi)} cm',
                     style: const TextStyle(color: AppColors.textHint)),

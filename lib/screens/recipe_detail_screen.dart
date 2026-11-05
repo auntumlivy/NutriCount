@@ -70,6 +70,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Hapus resep ini?'),
+        content: const Text('Resep yang dihapus tidak bisa dikembalikan.'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -90,15 +91,69 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     }
   }
 
+  Widget _tombolGaris(String label, VoidCallback aksi) => SizedBox(
+        height: 56,
+        child: OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.textDark,
+            side: const BorderSide(color: Colors.black54),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
+          ),
+          onPressed: _busy ? null : aksi,
+          child: Text(label,
+              style: const TextStyle(
+                  fontWeight: FontWeight.w700, fontSize: AppText.body)),
+        ),
+      );
+
+  /// Tombol aksi admin di bawah layar, tergantung status resep.
+  Widget? _barAdmin(Recipe r) {
+    if (!widget.adminMode) return null;
+    Widget kiri;
+    Widget kanan;
+    if (r.status == RecipeStatus.pending) {
+      kiri = _tombolGaris('Tolak', _tolak);
+      kanan = PrimaryButton(
+          label: 'Setujui',
+          loading: _busy,
+          onPressed: () => _ubah(RecipeStatus.approved));
+    } else if (r.status == RecipeStatus.approved) {
+      kiri = _tombolGaris('Hapus', _hapus);
+      kanan = PrimaryButton(
+          label: 'Tarik',
+          loading: _busy,
+          onPressed: () => _ubah(RecipeStatus.rejected,
+              alasan: 'Ditarik oleh admin'));
+    } else {
+      kiri = _tombolGaris('Hapus', _hapus);
+      kanan = PrimaryButton(
+          label: 'Setujui',
+          loading: _busy,
+          onPressed: () => _ubah(RecipeStatus.approved));
+    }
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+        child: Row(
+          children: [
+            Expanded(child: kiri),
+            const SizedBox(width: 12),
+            Expanded(child: kanan),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _bagian(String judul) => Padding(
         padding: const EdgeInsets.only(top: 22, bottom: 10),
-        child: Text(judul, style: serif(size: 18)),
+        child: Text(judul, style: serif(size: AppText.subtitle)),
       );
 
   @override
   Widget build(BuildContext context) {
     final r = widget.resep;
-    final adminAksi = widget.adminMode && r.status == RecipeStatus.pending;
     final bisaHapus = !widget.adminMode && r.status != RecipeStatus.approved;
 
     return Scaffold(
@@ -118,7 +173,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
         children: [
-          Text(r.judul, style: serif(size: 26)),
+          Text(r.judul, style: serif(size: AppText.title)),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -137,7 +192,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
             ),
           if (r.deskripsi.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Text(r.deskripsi, style: const TextStyle(fontSize: 16)),
+            Text(r.deskripsi, style: const TextStyle(fontSize: AppText.body)),
           ],
           _bagian('Bahan'),
           for (final b in r.bahan)
@@ -146,8 +201,8 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('•  ', style: TextStyle(fontSize: 16)),
-                  Expanded(child: Text(b, style: const TextStyle(fontSize: 16))),
+                  const Text('•  ', style: TextStyle(fontSize: AppText.body)),
+                  Expanded(child: Text(b, style: const TextStyle(fontSize: AppText.body))),
                 ],
               ),
             ),
@@ -162,10 +217,10 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                       width: 28,
                       child: Text('${i + 1}.',
                           style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w700))),
+                              fontSize: AppText.body, fontWeight: FontWeight.w700))),
                   Expanded(
                       child:
-                          Text(r.langkah[i], style: const TextStyle(fontSize: 16))),
+                          Text(r.langkah[i], style: const TextStyle(fontSize: AppText.body))),
                 ],
               ),
             ),
@@ -190,41 +245,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
           ],
         ],
       ),
-      bottomNavigationBar: adminAksi
-          ? SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 56,
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.textDark,
-                            side: const BorderSide(color: Colors.black54),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14)),
-                          ),
-                          onPressed: _busy ? null : _tolak,
-                          child: const Text('Tolak',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w700, fontSize: 17)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: PrimaryButton(
-                          label: 'Setujui',
-                          loading: _busy,
-                          onPressed: () => _ubah(RecipeStatus.approved)),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : null,
+      bottomNavigationBar: _barAdmin(r),
     );
   }
 }

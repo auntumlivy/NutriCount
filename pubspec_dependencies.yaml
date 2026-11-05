@@ -1,0 +1,13 @@
+# Paket yang dipakai app ini. Cara paling aman memasangnya (di folder project):
+#
+#   flutter pub add google_fonts fl_chart firebase_core firebase_auth cloud_firestore
+#
+# Pastikan juga di pubspec.yaml ada:
+#   flutter:
+#     uses-material-design: true
+dependencies:
+  google_fonts:
+  fl_chart:
+  firebase_core:
+  firebase_auth:
+  cloud_firestore:

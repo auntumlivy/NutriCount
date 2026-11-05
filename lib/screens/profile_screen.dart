@@ -4,7 +4,6 @@ import '../theme.dart';
 import '../utils/bmi_utils.dart';
 import '../widgets/app_widgets.dart';
 import '../widgets/recipe_widgets.dart';
-import 'admin_screen.dart';
 import 'community_recipes_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -16,7 +15,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _fs = DataService.instance;
-  late final Stream<Map<String, dynamic>?> _userS = _fs.userStream();
   final _nama = TextEditingController();
   final _email = TextEditingController();
   final _dob = TextEditingController();
@@ -80,7 +78,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Profil', style: serif(size: 34))),
+                child: Text('Profil', style: serif(size: AppText.hero))),
             const SizedBox(height: 16),
             Container(
               width: 150,
@@ -119,20 +117,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       builder: (_) =>
                           const CommunityRecipesScreen(initialTab: 1))),
             ),
-            StreamBuilder<Map<String, dynamic>?>(
-              stream: _userS,
-              builder: (context, snap) => snap.data?['role'] == 'admin'
-                  ? MenuTile(
-                      icon: Icons.admin_panel_settings_outlined,
-                      label: 'Panel Admin',
-                      onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const AdminScreen())),
-                    )
-                  : const SizedBox.shrink(),
-            ),
-            if (_fs.adaAkun) ...[
+            if (_fs.bisaKeluar) ...[
               const SizedBox(height: 14),
               SizedBox(
                 width: double.infinity,
@@ -147,7 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onPressed: () => _fs.keluar(),
                   child: const Text('Logout',
                       style:
-                          TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+                          TextStyle(fontWeight: FontWeight.w700, fontSize: AppText.body)),
                 ),
               ),
             ] else
