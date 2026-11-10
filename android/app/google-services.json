@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1040354716499",
+    "project_id": "nutricount-b9141",
+    "storage_bucket": "nutricount-b9141.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1040354716499:android:a4be62cd2c8fcdc9820fa6",
+        "android_client_info": {
+          "package_name": "com.example.nutricount"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1040354716499-ar0hc1ig6mkeklk9vbkv17hfkc2uk317.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDksA0c7GaKpfT6h2V3CzMt-x0CMP9snBE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1040354716499-ar0hc1ig6mkeklk9vbkv17hfkc2uk317.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1040354716499-dtr47cdmv30jj0ip4t2bfn8a3lf59idh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.nutricount"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
