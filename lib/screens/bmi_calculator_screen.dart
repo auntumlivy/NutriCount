@@ -22,6 +22,8 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
 
   bool _pria = true;
   bool _saving = false;
+  TingkatAktivitas _aktivitas = TingkatAktivitas.ringan;
+  TujuanKalori _tujuan = TujuanKalori.mempertahankan;
 
   // hasil perhitungan
   double? _bmi;
@@ -62,7 +64,14 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
     final bmi = BmiUtils.hitungBmi(berat, tinggi);
     final kat = BmiUtils.kategori(bmi);
     final kal = BmiUtils.kaloriHarian(
-        berat: berat, tinggi: tinggi, usia: usia, pria: _pria, kategori: kat);
+    berat: berat,
+    tinggi: tinggi,
+    usia: usia,
+    pria: _pria,
+    kategori: kat,
+    aktivitas: _aktivitas,
+    tujuan: _tujuan,
+    );
     setState(() {
       _bmi = bmi;
       _kategori = kat;
@@ -139,15 +148,90 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                         const TextInputType.numberWithOptions(decimal: true))),
               ],
             ),
+            
             const SizedBox(height: 22),
+
+            // Pilihan tingkat aktivitas
+            Text('Tingkat Aktivitas', style: serif(size: AppText.body)),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<TingkatAktivitas>(
+              value: _aktivitas,
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              ),
+              items: const [
+                DropdownMenuItem(
+                  value: TingkatAktivitas.sedentari,
+                  child: Text('Jarang beraktivitas'),
+                ),
+                DropdownMenuItem(
+                  value: TingkatAktivitas.ringan,
+                  child: Text('Aktivitas ringan (1–3 hari/minggu)'),
+                ),
+                DropdownMenuItem(
+                  value: TingkatAktivitas.sedang,
+                  child: Text('Aktivitas sedang (3–5 hari/minggu)'),
+                ),
+                DropdownMenuItem(
+                  value: TingkatAktivitas.berat,
+                  child: Text('Aktivitas berat (6–7 hari/minggu)'),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _aktivitas = value;
+                  });
+                }
+              },
+            ),
+
+            const SizedBox(height: 18),
+
+            // Pilihan tujuan kalori
+            Text('Tujuan Kalori', style: serif(size: AppText.body)),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<TujuanKalori>(
+              value: _tujuan,
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              ),
+              items: const [
+                DropdownMenuItem(
+                  value: TujuanKalori.menurunkan,
+                  child: Text('Menurunkan berat badan'),
+                ),
+                DropdownMenuItem(
+                  value: TujuanKalori.mempertahankan,
+                  child: Text('Mempertahankan berat badan'),
+                ),
+                DropdownMenuItem(
+                  value: TujuanKalori.menaikkan,
+                  child: Text('Menaikkan berat badan'),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _tujuan = value;
+                  });
+                }
+              },
+            ),
+
+            const SizedBox(height: 22),
+
             Center(
               child: SizedBox(
                 width: 140,
                 height: 46,
                 child: ElevatedButton(
-                    onPressed: _hitung, child: const Text('Hitung')),
+                  onPressed: _hitung,
+                  child: const Text('Hitung'),
+                ),
               ),
             ),
+
             const SizedBox(height: 28),
             BmiIndicator(bmi: _bmi),
             const SizedBox(height: 20),
@@ -186,7 +270,10 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
                       context,
                       MaterialPageRoute(
                           builder: (_) =>
-                              FoodRecommendationScreen(kategori: _kategori!)),
+                              FoodRecommendationScreen(
+                                kategori: _kategori!,
+                                targetKalori: _kalori,
+                              )),
                     ),
                     child: Text('More>',
                         style: serif(size: AppText.body).copyWith(

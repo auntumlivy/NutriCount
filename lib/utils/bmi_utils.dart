@@ -3,6 +3,19 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../theme.dart';
 
+enum TingkatAktivitas {
+  sedentari,
+  ringan,
+  sedang,
+  berat,
+}
+
+enum TujuanKalori {
+  menurunkan,
+  mempertahankan,
+  menaikkan,
+}
+
 class BmiUtils {
   static double hitungBmi(double kg, double cm) => kg / pow(cm / 100, 2);
 
@@ -26,22 +39,45 @@ class BmiUtils {
     }
   }
 
-  /// Kebutuhan kalori harian (Mifflin-St Jeor, aktivitas ringan),
-  /// disesuaikan dengan kategori BMI.
-  static double kaloriHarian({
-    required double berat,
-    required double tinggi,
-    required int usia,
-    required bool pria,
-    required String kategori,
-  }) {
-    final bmr = 10 * berat + 6.25 * tinggi - 5 * usia + (pria ? 5 : -161);
-    var tdee = bmr * 1.375;
-    if (kategori == 'Underweight') tdee += 300;
-    if (kategori == 'Overweight') tdee -= 300;
-    if (kategori == 'Obesitas') tdee -= 500;
-    return tdee;
+  /// Faktor aktivitas harian.
+static double faktorAktivitas(TingkatAktivitas aktivitas) {
+  switch (aktivitas) {
+    case TingkatAktivitas.sedentari:
+      return 1.2;
+    case TingkatAktivitas.ringan:
+      return 1.375;
+    case TingkatAktivitas.sedang:
+      return 1.55;
+    case TingkatAktivitas.berat:
+      return 1.725;
   }
+}
+
+/// Menghitung kebutuhan kalori harian.
+static double kaloriHarian({
+  required double berat,
+  required double tinggi,
+  required int usia,
+  required bool pria,
+  required String kategori,
+  TingkatAktivitas aktivitas = TingkatAktivitas.ringan,
+  TujuanKalori tujuan = TujuanKalori.mempertahankan,
+}) 
+{
+  final bmr =
+      10 * berat + 6.25 * tinggi - 5 * usia + (pria ? 5 : -161);
+
+  final tdee = bmr * faktorAktivitas(aktivitas);
+
+  switch (tujuan) {
+    case TujuanKalori.menaikkan:
+      return tdee + 250;
+    case TujuanKalori.menurunkan:
+      return tdee - 250;
+    case TujuanKalori.mempertahankan:
+      return tdee;
+  }
+}
 
   /// Rentang berat ideal (BMI 18,5 - 24,9).
   static (double, double) beratIdeal(double cm) {
