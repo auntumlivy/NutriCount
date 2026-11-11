@@ -10,7 +10,13 @@ import 'community_recipes_screen.dart';
 /// "More>" dari kalkulator BMI (dengan [kategori]).
 class FoodRecommendationScreen extends StatefulWidget {
   final String? kategori;
-  const FoodRecommendationScreen({super.key, this.kategori});
+  final double? targetKalori;
+
+  const FoodRecommendationScreen({
+    super.key,
+    this.kategori,
+    this.targetKalori,
+  });
 
   @override
   State<FoodRecommendationScreen> createState() =>
@@ -46,6 +52,20 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
             final aktif =
                 _pilih ?? widget.kategori ?? latest?.kategori ?? 'Normal';
             final foods = BmiUtils.makananUntuk(aktif);
+            final targetKalori =
+                widget.targetKalori ?? latest?.kalori;
+
+            final kaloriSarapan =
+                targetKalori == null ? null : targetKalori * 0.25;
+
+            final kaloriSiang =
+                targetKalori == null ? null : targetKalori * 0.35;
+
+            final kaloriMalam =
+                targetKalori == null ? null : targetKalori * 0.30;
+
+            final kaloriSnack =
+                targetKalori == null ? null : targetKalori * 0.10;
 
             final info = latest == null
                 ? 'Belum ada data BMI. Hitung & simpan BMI di tab BMI agar rekomendasi menyesuaikan.'
@@ -55,6 +75,44 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
 
             return CustomScrollView(
               slivers: [
+
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.fieldGrey,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Kebutuhan Kalori Harian',
+                            style: serif(size: AppText.body),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            targetKalori == null
+                                ? 'Hitung dan simpan BMI untuk melihat kebutuhan kalori.'
+                                : '${targetKalori.round()} kkal / hari',
+                            style: serif(size: AppText.title),
+                          ),
+                          if (targetKalori != null) ...[
+                            const Divider(height: 24),
+                            _barisKalori('Sarapan (25%)', kaloriSarapan!),
+                            _barisKalori('Makan siang (35%)', kaloriSiang!),
+                            _barisKalori('Makan malam (30%)', kaloriMalam!),
+                            _barisKalori('Camilan (10%)', kaloriSnack!),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
                 if (!dipush)
                   SliverToBoxAdapter(
                     child: Padding(
@@ -158,6 +216,30 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
           },
         ),
       ),
+    ); // Scaffold
+  } // penutup build()
+
+  // TEMPEL FUNGSI DI SINI
+  Widget _barisKalori(String label, double kalori) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: AppText.small),
+          ),
+          Text(
+            '${kalori.round()} kkal',
+            style: const TextStyle(
+              fontSize: AppText.small,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
-}
+
+} // penutup class
