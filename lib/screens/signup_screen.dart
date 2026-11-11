@@ -18,6 +18,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _dob = TextEditingController();
   final _form = GlobalKey<FormState>();
   bool _loading = false;
+  bool _sembunyi = true;
 
   Future<void> _pilihTanggal() async {
     final d = await showDatePicker(
@@ -39,7 +40,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         password: _pass.text,
         tglLahir: _dob.text,
       );
-      // AuthGate otomatis pindah ke aplikasi utama; tutup halaman ini.
+
       if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } catch (e) {
       if (mounted) {
@@ -58,6 +59,44 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _pass.dispose();
     _dob.dispose();
     super.dispose();
+  }
+
+
+  Widget _kolomPassword() {
+    return Column(
+      children: [
+        Text('PASSWORD',
+            style: serif(
+                size: AppText.small,
+                weight: FontWeight.w400,
+                color: AppColors.textHint,
+                spacing: 2.5)),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _pass,
+          obscureText: _sembunyi,
+          textAlign: TextAlign.center,
+          validator: (v) => (v == null || v.length < 6)
+              ? 'Password minimal 6 karakter'
+              : null,
+          decoration: InputDecoration(
+            hintText: 'Minimal 6 karakter',
+
+            prefixIcon: const SizedBox(width: 48),
+            suffixIcon: IconButton(
+              tooltip: _sembunyi ? 'Tampilkan password' : 'Sembunyikan password',
+              icon: Icon(
+                _sembunyi
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+                color: AppColors.textHint,
+              ),
+              onPressed: () => setState(() => _sembunyi = !_sembunyi),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -88,7 +127,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   controller: _nama,
                   hint: 'Nama lengkap',
                   validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Nama wajib diisi' : null,
+                  (v == null || v.trim().isEmpty) ? 'Nama wajib diisi' : null,
                 ),
                 const SizedBox(height: 18),
                 LabeledField(
@@ -101,15 +140,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       : null,
                 ),
                 const SizedBox(height: 18),
-                LabeledField(
-                  label: 'Password',
-                  controller: _pass,
-                  hint: '*****',
-                  obscure: true,
-                  validator: (v) => (v == null || v.length < 6)
-                      ? 'Password minimal 6 karakter'
-                      : null,
-                ),
+                _kolomPassword(),
                 const SizedBox(height: 18),
                 LabeledField(
                   label: 'Date of Birth',
@@ -118,7 +149,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   readOnly: true,
                   onTap: _pilihTanggal,
                   validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Tanggal lahir wajib diisi' : null,
+                  (v == null || v.isEmpty) ? 'Tanggal lahir wajib diisi' : null,
                 ),
                 const SizedBox(height: 34),
                 PrimaryButton(

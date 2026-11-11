@@ -65,6 +65,7 @@ class Recipe {
   final List<String> langkah;
   final int kalori; // per porsi
   final String sumberUrl; // link asal resep (opsional)
+  final String foto; // foto makanan dalam base64 (kosong = tanpa foto)
   final String uid; // pembuat
   final String namaPembuat;
   final String status; // RecipeStatus.*
@@ -79,6 +80,7 @@ class Recipe {
     required this.langkah,
     required this.kalori,
     this.sumberUrl = '',
+    this.foto = '',
     this.uid = '',
     this.namaPembuat = 'Anonim',
     this.status = RecipeStatus.pending,
@@ -100,6 +102,7 @@ class Recipe {
         langkah: langkah,
         kalori: kalori,
         sumberUrl: sumberUrl,
+        foto: foto,
         uid: uid ?? this.uid,
         namaPembuat: namaPembuat,
         status: status ?? this.status,

@@ -16,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _pass = TextEditingController();
   final _form = GlobalKey<FormState>();
   bool _loading = false;
+  bool _sembunyi = true;
 
   Future<void> _login() async {
     if (!_form.currentState!.validate()) return;
@@ -37,6 +38,42 @@ class _LoginScreenState extends State<LoginScreen> {
     _email.dispose();
     _pass.dispose();
     super.dispose();
+  }
+
+
+  Widget _kolomPassword() {
+    return Column(
+      children: [
+        Text('PASSWORD',
+            style: serif(
+                size: AppText.small,
+                weight: FontWeight.w400,
+                color: AppColors.textHint,
+                spacing: 2.5)),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _pass,
+          obscureText: _sembunyi,
+          textAlign: TextAlign.center,
+          validator: (v) =>
+          (v == null || v.isEmpty) ? 'Password wajib diisi' : null,
+          decoration: InputDecoration(
+            // spasi kosong di kiri supaya teks tetap di tengah
+            prefixIcon: const SizedBox(width: 48),
+            suffixIcon: IconButton(
+              tooltip: _sembunyi ? 'Tampilkan password' : 'Sembunyikan password',
+              icon: Icon(
+                _sembunyi
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+                color: AppColors.textHint,
+              ),
+              onPressed: () => setState(() => _sembunyi = !_sembunyi),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -77,13 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         : null,
                   ),
                   const SizedBox(height: 20),
-                  LabeledField(
-                    label: 'Password',
-                    controller: _pass,
-                    obscure: true,
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? 'Password wajib diisi' : null,
-                  ),
+                  _kolomPassword(),
                   const SizedBox(height: 22),
                   GestureDetector(
                     onTap: () => Navigator.push(context,
