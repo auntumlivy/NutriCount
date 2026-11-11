@@ -5,6 +5,7 @@ import '../services/data_service.dart';
 import '../theme.dart';
 import '../widgets/app_widgets.dart';
 import '../widgets/recipe_widgets.dart';
+import '../widgets/recipe_photo.dart';
 
 /// Detail resep. Kalau [adminMode] = true dan status masih menunggu,
 /// muncul tombol Setujui / Tolak di bawah.
@@ -92,20 +93,20 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   }
 
   Widget _tombolGaris(String label, VoidCallback aksi) => SizedBox(
-        height: 56,
-        child: OutlinedButton(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.textDark,
-            side: const BorderSide(color: Colors.black54),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14)),
-          ),
-          onPressed: _busy ? null : aksi,
-          child: Text(label,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w700, fontSize: AppText.body)),
-        ),
-      );
+    height: 56,
+    child: OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.textDark,
+        side: const BorderSide(color: Colors.black54),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14)),
+      ),
+      onPressed: _busy ? null : aksi,
+      child: Text(label,
+          style: const TextStyle(
+              fontWeight: FontWeight.w700, fontSize: AppText.body)),
+    ),
+  );
 
   /// Tombol aksi admin di bawah layar, tergantung status resep.
   Widget? _barAdmin(Recipe r) {
@@ -147,9 +148,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   }
 
   Widget _bagian(String judul) => Padding(
-        padding: const EdgeInsets.only(top: 22, bottom: 10),
-        child: Text(judul, style: serif(size: AppText.subtitle)),
-      );
+    padding: const EdgeInsets.only(top: 22, bottom: 10),
+    child: Text(judul, style: serif(size: AppText.subtitle)),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -173,6 +174,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
         children: [
+          // <-- BARU: foto makanan (tidak tampil kalau kosong)
+          if (r.foto.isNotEmpty) ...[
+            RecipePhoto(foto: r.foto, height: 220),
+            const SizedBox(height: 16),
+          ],
           Text(r.judul, style: serif(size: AppText.title)),
           const SizedBox(height: 10),
           Row(
@@ -202,7 +208,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('•  ', style: TextStyle(fontSize: AppText.body)),
-                  Expanded(child: Text(b, style: const TextStyle(fontSize: AppText.body))),
+                  Expanded(
+                      child: Text(b,
+                          style: const TextStyle(fontSize: AppText.body))),
                 ],
               ),
             ),
@@ -217,10 +225,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                       width: 28,
                       child: Text('${i + 1}.',
                           style: const TextStyle(
-                              fontSize: AppText.body, fontWeight: FontWeight.w700))),
+                              fontSize: AppText.body,
+                              fontWeight: FontWeight.w700))),
                   Expanded(
-                      child:
-                          Text(r.langkah[i], style: const TextStyle(fontSize: AppText.body))),
+                      child: Text(r.langkah[i],
+                          style: const TextStyle(fontSize: AppText.body))),
                 ],
               ),
             ),
@@ -239,7 +248,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 icon: const Icon(Icons.copy, size: 18),
                 label: const Text('Salin link'),
                 style:
-                    TextButton.styleFrom(foregroundColor: AppColors.sageDark),
+                TextButton.styleFrom(foregroundColor: AppColors.sageDark),
               ),
             ),
           ],

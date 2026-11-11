@@ -4,15 +4,15 @@ import '../models/models.dart';
 import 'data_service.dart';
 
 Map<String, dynamic> _bmiToMap(BmiRecord r) => {
-      'usia': r.usia,
-      'gender': r.gender,
-      'tinggi': r.tinggi,
-      'berat': r.berat,
-      'bmi': r.bmi,
-      'kategori': r.kategori,
-      'kalori': r.kalori,
-      'tanggal': Timestamp.fromDate(r.tanggal),
-    };
+  'usia': r.usia,
+  'gender': r.gender,
+  'tinggi': r.tinggi,
+  'berat': r.berat,
+  'bmi': r.bmi,
+  'kategori': r.kategori,
+  'kalori': r.kalori,
+  'tanggal': Timestamp.fromDate(r.tanggal),
+};
 
 BmiRecord _bmiFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
   final m = d.data()!;
@@ -30,12 +30,12 @@ BmiRecord _bmiFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
 }
 
 Map<String, dynamic> _logToMap(FoodLog f) => {
-      'nama': f.nama,
-      'kalori': f.kalori,
-      'waktu': f.waktu,
-      'hari': f.hari,
-      'tanggal': Timestamp.fromDate(f.tanggal),
-    };
+  'nama': f.nama,
+  'kalori': f.kalori,
+  'waktu': f.waktu,
+  'hari': f.hari,
+  'tanggal': Timestamp.fromDate(f.tanggal),
+};
 
 FoodLog _logFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
   final m = d.data()!;
@@ -59,6 +59,7 @@ Recipe _recipeFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
     langkah: List<String>.from(m['langkah'] ?? const []),
     kalori: (m['kalori'] ?? 0).toInt(),
     sumberUrl: m['sumberUrl'] ?? '',
+    foto: m['foto'] ?? '', // <-- BARU (resep lama tanpa foto tetap aman)
     uid: m['uid'] ?? '',
     namaPembuat: m['namaPembuat'] ?? 'Anonim',
     status: m['status'] ?? RecipeStatus.pending,
@@ -161,11 +162,11 @@ class FirestoreService implements DataService {
   Stream<List<FoodItem>> customFoodsStream() => _custom.snapshots().map((s) =>
       s.docs
           .map((d) => FoodItem(
-                (d.data()['nama'] ?? '') as String,
-                '🍽️',
-                ((d.data()['kalori'] ?? 0) as num).toInt(),
-                id: d.id,
-              ))
+        (d.data()['nama'] ?? '') as String,
+        '🍽️',
+        ((d.data()['kalori'] ?? 0) as num).toInt(),
+        id: d.id,
+      ))
           .toList());
 
   @override
@@ -177,7 +178,7 @@ class FirestoreService implements DataService {
 
   // Diurutkan di sisi aplikasi supaya tidak butuh composite index Firestore.
   Stream<List<Recipe>> _recipeStream(Query<Map<String, dynamic>> q,
-          {bool terbaruDulu = true}) =>
+      {bool terbaruDulu = true}) =>
       q.snapshots().map((s) {
         final list = s.docs.map(_recipeFromDoc).toList();
         list.sort((a, b) => terbaruDulu
@@ -188,18 +189,19 @@ class FirestoreService implements DataService {
 
   @override
   Future<void> submitRecipe(Recipe r) => _recipes.add({
-        'judul': r.judul,
-        'deskripsi': r.deskripsi,
-        'bahan': r.bahan,
-        'langkah': r.langkah,
-        'kalori': r.kalori,
-        'sumberUrl': r.sumberUrl,
-        'uid': _uid,
-        'namaPembuat': r.namaPembuat,
-        'status': RecipeStatus.pending,
-        'alasanTolak': '',
-        'dibuat': Timestamp.now(),
-      });
+    'judul': r.judul,
+    'deskripsi': r.deskripsi,
+    'bahan': r.bahan,
+    'langkah': r.langkah,
+    'kalori': r.kalori,
+    'sumberUrl': r.sumberUrl,
+    'foto': r.foto, // <-- BARU
+    'uid': _uid,
+    'namaPembuat': r.namaPembuat,
+    'status': RecipeStatus.pending,
+    'alasanTolak': '',
+    'dibuat': Timestamp.now(),
+  });
 
   @override
   Stream<List<Recipe>> approvedRecipesStream() =>
@@ -216,7 +218,7 @@ class FirestoreService implements DataService {
 
   @override
   Future<void> setRecipeStatus(String id, String status,
-          {String alasan = ''}) =>
+      {String alasan = ''}) =>
       _recipes.doc(id).update({
         'status': status,
         'alasanTolak': status == RecipeStatus.rejected ? alasan : '',
@@ -232,17 +234,18 @@ class FirestoreService implements DataService {
 
   @override
   Future<void> adminAddRecipe(Recipe r) => _recipes.add({
-        'judul': r.judul,
-        'deskripsi': r.deskripsi,
-        'bahan': r.bahan,
-        'langkah': r.langkah,
-        'kalori': r.kalori,
-        'sumberUrl': r.sumberUrl,
-        'uid': _uid,
-        'namaPembuat': r.namaPembuat,
-        'status': RecipeStatus.approved,
-        'alasanTolak': '',
-        'dibuat': Timestamp.now(),
-        'ditinjau': Timestamp.now(),
-      });
+    'judul': r.judul,
+    'deskripsi': r.deskripsi,
+    'bahan': r.bahan,
+    'langkah': r.langkah,
+    'kalori': r.kalori,
+    'sumberUrl': r.sumberUrl,
+    'foto': r.foto, // <-- BARU
+    'uid': _uid,
+    'namaPembuat': r.namaPembuat,
+    'status': RecipeStatus.approved,
+    'alasanTolak': '',
+    'dibuat': Timestamp.now(),
+    'ditinjau': Timestamp.now(),
+  });
 }
