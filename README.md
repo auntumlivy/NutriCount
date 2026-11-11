@@ -1,5 +1,4 @@
 # NutriCount
-
 Aplikasi Flutter untuk memantau BMI dan kalori harian, dengan rekomendasi makanan
 dan resep komunitas yang dikurasi admin.
 
@@ -18,7 +17,6 @@ dan resep komunitas yang dikurasi admin.
 - Terbitkan resep langsung
 
 ## Menjalankan
-
 ```bash
 flutter pub add google_fonts fl_chart firebase_core firebase_auth cloud_firestore
 flutter run
@@ -30,7 +28,6 @@ pengguna atau admin, data tersimpan sementara di memori.
 Untuk Firebase dan cara menjadi admin, lihat [README_SETUP.md](README_SETUP.md).
 
 ## Struktur
-
 ```
 lib/
   main.dart            titik masuk, memilih mode Firebase atau demo
