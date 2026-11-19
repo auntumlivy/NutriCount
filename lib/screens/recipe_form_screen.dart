@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -8,6 +7,7 @@ import 'package:flutter/services.dart' show PlatformException;
 import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/data_service.dart';
+import '../services/cloudinary_service.dart';
 import '../theme.dart';
 import '../widgets/app_widgets.dart';
 
@@ -31,7 +31,8 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
   final _sumber = TextEditingController();
   final _picker = ImagePicker();
   bool _loading = false;
-  Uint8List? _foto; // foto yang sudah dikompres (opsional)
+  Uint8List? _foto;
+  XFile? _fileFoto;
 
   // Foto disimpan di dokumen Firestore (batas dokumen 1 MiB). Base64 menambah
   // ukuran sekitar 33%, jadi batas mentahnya dibuat kecil.
@@ -51,7 +52,10 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
       if (res.isEmpty || res.file == null) return;
       final bytes = await res.file!.readAsBytes();
       if (bytes.length <= _batasFotoByte && mounted) {
-        setState(() => _foto = bytes);
+        setState(() {
+          _foto = bytes;
+          _fileFoto = res.file;
+        });
       }
     } catch (_) {
       // Abaikan: pemulihan hanya bonus.
@@ -87,7 +91,12 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
             'maks ${_batasFotoByte ~/ 1024} KB). Pilih foto lain.');
         return;
       }
-      if (mounted) setState(() => _foto = bytes);
+            if (mounted) {
+        setState(() {
+          _foto = bytes;
+          _fileFoto = file;
+        });
+      }
     } on PlatformException catch (e) {
       final kode = e.code.toLowerCase();
       if (kode.contains('denied') || kode.contains('permission')) {
@@ -137,7 +146,10 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
                 title: const Text('Hapus foto'),
                 onTap: () {
                   Navigator.pop(ctx);
-                  setState(() => _foto = null);
+                  setState(() {
+                    _foto = null;
+                    _fileFoto = null;
+                  });
                 },
               ),
             const SizedBox(height: 8),
@@ -239,6 +251,10 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
     try {
       final u = await DataService.instance.getUser();
       final nama = ((u?['nama'] ?? '') as String).trim();
+
+      final fotoUrl = _fileFoto == null
+          ? ''
+          : await CloudinaryService.uploadImage(_fileFoto!);
       final resep = Recipe(
         judul: _judul.text.trim(),
         deskripsi: _deskripsi.text.trim(),
@@ -246,7 +262,7 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
         langkah: _baris(_langkah.text),
         kalori: int.parse(_kalori.text.trim()),
         sumberUrl: _sumber.text.trim(),
-        foto: _foto == null ? '' : base64Encode(_foto!),
+        foto: fotoUrl,
         namaPembuat:
         widget.adminMode ? 'Admin' : (nama.isEmpty ? 'Anonim' : nama),
         dibuat: DateTime.now(),

@@ -1,8 +1,8 @@
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 
-/// Menampilkan foto resep dari base64.
-/// Tidak menampilkan apa-apa kalau foto kosong atau rusak.
+/// Menampilkan foto resep dari URL Cloudinary atau Base64 lama.
 class RecipePhoto extends StatelessWidget {
   final String foto;
   final double height;
@@ -18,21 +18,42 @@ class RecipePhoto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (foto.isEmpty) return const SizedBox.shrink();
-    try {
-      final bytes = base64Decode(foto);
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: Image.memory(
+
+    final isUrl =
+        foto.startsWith('https://') || foto.startsWith('http://');
+
+    Widget gambar;
+
+    if (isUrl) {
+      gambar = Image.network(
+        foto,
+        height: height,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        gaplessPlayback: true,
+        errorBuilder: (context, error, stack) =>
+            const SizedBox.shrink(),
+      );
+    } else {
+      try {
+        final bytes = base64Decode(foto);
+        gambar = Image.memory(
           bytes,
           height: height,
           width: double.infinity,
           fit: BoxFit.cover,
           gaplessPlayback: true,
-          errorBuilder: (context, error, stack) => const SizedBox.shrink(),
-        ),
-      );
-    } catch (_) {
-      return const SizedBox.shrink();
+          errorBuilder: (context, error, stack) =>
+              const SizedBox.shrink(),
+        );
+      } catch (_) {
+        return const SizedBox.shrink();
+      }
     }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: gambar,
+    );
   }
 }
