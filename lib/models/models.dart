@@ -65,7 +65,7 @@ class Recipe {
   final List<String> langkah;
   final int kalori; // per porsi
   final String sumberUrl; // link asal resep (opsional)
-  final String foto; // foto makanan dalam base64 (kosong = tanpa foto)
+  final String foto; // URL foto resep di Cloudinary (opsional)
   final String uid; // pembuat
   final String namaPembuat;
   final String status; // RecipeStatus.*
