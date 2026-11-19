@@ -28,6 +28,7 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
   final _kalori = TextEditingController();
   final _sumber = TextEditingController();
   bool _loading = false;
+  String _kategoriBMI = 'Semua Kategori';
   XFile? _fotoFile; // file asli untuk diunggah ke Cloudinary
   Uint8List? _foto; // hanya untuk pratinjau
 
@@ -200,6 +201,7 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
         bahan: _baris(_bahan.text),
         langkah: _baris(_langkah.text),
         kalori: int.parse(_kalori.text.trim()),
+        kategoriBMI: _kategoriBMI,
         sumberUrl: _sumber.text.trim(),
         foto: fotoUrl,
         namaPembuat: widget.adminMode
@@ -306,6 +308,18 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
                         : null),
                 _isian('Deskripsi singkat', _deskripsi,
                     hint: 'Opsional', maxLines: 3),
+                DropdownButtonFormField<String>(
+                  value: _kategoriBMI,
+                  decoration: const InputDecoration(labelText: 'Kategori BMI'),
+                  items: const [
+                    'Semua Kategori', 'Underweight', 'Normal',
+                    'Overweight', 'Obesitas',
+                  ].map((k) => DropdownMenuItem(value: k, child: Text(k))).toList(),
+                  onChanged: _loading ? null : (v) {
+                    if (v != null) setState(() => _kategoriBMI = v);
+                  },
+                ),
+                const SizedBox(height: 18),
                 _isian('Bahan', _bahan,
                     hint: 'Satu bahan per baris',
                     maxLines: 8,

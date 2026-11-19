@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -28,15 +25,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -56,7 +47,6 @@ class DefaultFirebaseOptions {
     projectId: 'nutricount-b9141',
     storageBucket: 'nutricount-b9141.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAK1rNJNfnz4r85NsEvxq3iww3yyHevBK0',
     appId: '1:1040354716499:ios:24df281a38f7dfa1820fa6',
@@ -65,5 +55,31 @@ class DefaultFirebaseOptions {
     storageBucket: 'nutricount-b9141.firebasestorage.app',
     iosClientId: '1040354716499-luabqh3r2qf7peut9fcmr5cnls2dumc6.apps.googleusercontent.com',
     iosBundleId: 'com.example.testt',
+  );
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyAK1rNJNfnz4r85NsEvxq3iww3yyHevBK0',
+    appId: '1:1040354716499:ios:24df281a38f7dfa1820fa6',
+    messagingSenderId: '1040354716499',
+    projectId: 'nutricount-b9141',
+    storageBucket: 'nutricount-b9141.firebasestorage.app',
+    iosClientId: '1040354716499-luabqh3r2qf7peut9fcmr5cnls2dumc6.apps.googleusercontent.com',
+    iosBundleId: 'com.example.testt',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyBYt76zeXPcJdC9W5kweiaA8jkoguVp0K0',
+    appId: '1:1040354716499:web:9205af907530c425820fa6',
+    messagingSenderId: '1040354716499',
+    projectId: 'nutricount-b9141',
+    authDomain: 'nutricount-b9141.firebaseapp.com',
+    storageBucket: 'nutricount-b9141.firebasestorage.app',
+  );
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyBYt76zeXPcJdC9W5kweiaA8jkoguVp0K0',
+    appId: '1:1040354716499:web:9205af907530c425820fa6',
+    messagingSenderId: '1040354716499',
+    projectId: 'nutricount-b9141',
+    authDomain: 'nutricount-b9141.firebaseapp.com',
+    storageBucket: 'nutricount-b9141.firebasestorage.app',
   );
 }
