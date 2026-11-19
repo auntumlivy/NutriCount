@@ -59,7 +59,7 @@ Recipe _recipeFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
     langkah: List<String>.from(m['langkah'] ?? const []),
     kalori: (m['kalori'] ?? 0).toInt(),
     sumberUrl: m['sumberUrl'] ?? '',
-    foto: m['foto'] ?? '', // <-- BARU (resep lama tanpa foto tetap aman)
+    foto: m['foto'] ?? '',
     uid: m['uid'] ?? '',
     namaPembuat: m['namaPembuat'] ?? 'Anonim',
     status: m['status'] ?? RecipeStatus.pending,
@@ -195,7 +195,7 @@ class FirestoreService implements DataService {
     'langkah': r.langkah,
     'kalori': r.kalori,
     'sumberUrl': r.sumberUrl,
-    'foto': r.foto, // <-- BARU
+    'foto': r.foto,
     'uid': _uid,
     'namaPembuat': r.namaPembuat,
     'status': RecipeStatus.pending,
@@ -240,7 +240,7 @@ class FirestoreService implements DataService {
     'langkah': r.langkah,
     'kalori': r.kalori,
     'sumberUrl': r.sumberUrl,
-    'foto': r.foto, // <-- BARU
+    'foto': r.foto,
     'uid': _uid,
     'namaPembuat': r.namaPembuat,
     'status': RecipeStatus.approved,

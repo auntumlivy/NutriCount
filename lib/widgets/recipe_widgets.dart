@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import '../models/models.dart';
+import '../services/cloudinary_service.dart';
 import '../theme.dart';
 import 'app_widgets.dart';
 
@@ -22,7 +26,7 @@ class StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration:
-          BoxDecoration(color: warna, borderRadius: BorderRadius.circular(20)),
+      BoxDecoration(color: warna, borderRadius: BorderRadius.circular(20)),
       child: Text(label,
           style: const TextStyle(
               fontSize: AppText.caption,
@@ -32,7 +36,110 @@ class StatusChip extends StatelessWidget {
   }
 }
 
-/// Kartu satu resep di daftar.
+/// Foto resep. Mendukung URL Cloudinary (baru) dan base64 (data lama).
+class RecipePhoto extends StatefulWidget {
+  final String data;
+  final double? width;
+  final double height;
+  final double radius;
+
+  const RecipePhoto({
+    super.key,
+    required this.data,
+    this.width,
+    required this.height,
+    this.radius = 12,
+  });
+
+  @override
+  State<RecipePhoto> createState() => _RecipePhotoState();
+}
+
+class _RecipePhotoState extends State<RecipePhoto> {
+  Uint8List? _bytes; // hanya untuk foto lama (base64)
+
+  bool get _adalahUrl => widget.data.startsWith('http');
+
+  @override
+  void initState() {
+    super.initState();
+    _decode();
+  }
+
+  @override
+  void didUpdateWidget(covariant RecipePhoto old) {
+    super.didUpdateWidget(old);
+    if (old.data != widget.data) _decode();
+  }
+
+  void _decode() {
+    if (widget.data.isEmpty || _adalahUrl) {
+      _bytes = null;
+      return;
+    }
+    try {
+      _bytes = base64Decode(widget.data);
+    } catch (_) {
+      _bytes = null;
+    }
+  }
+
+  Widget _kosong() => Container(
+    width: widget.width,
+    height: widget.height,
+    color: AppColors.fieldGrey,
+    child: const Icon(Icons.broken_image_outlined,
+        color: AppColors.textHint),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.data.isEmpty) return const SizedBox.shrink();
+
+    Widget gambar;
+    if (_adalahUrl) {
+      final w = (widget.width != null && widget.width!.isFinite)
+          ? widget.width!
+          : 600.0;
+      gambar = Image.network(
+        CloudinaryService.thumb(widget.data,
+            width: (w * 2).round().clamp(200, 1200)),
+        width: widget.width,
+        height: widget.height,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, progress) => progress == null
+            ? child
+            : Container(
+          width: widget.width,
+          height: widget.height,
+          color: AppColors.fieldGrey,
+          alignment: Alignment.center,
+          child: const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(strokeWidth: 2.5)),
+        ),
+        errorBuilder: (_, __, ___) => _kosong(),
+      );
+    } else if (_bytes != null) {
+      gambar = Image.memory(_bytes!,
+          width: widget.width,
+          height: widget.height,
+          fit: BoxFit.cover,
+          gaplessPlayback: true,
+          errorBuilder: (_, __, ___) => _kosong());
+    } else {
+      return const SizedBox.shrink();
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(widget.radius),
+      child: gambar,
+    );
+  }
+}
+
+/// Kartu satu resep di daftar (dengan foto kecil kalau ada).
 class RecipeCard extends StatelessWidget {
   final Recipe resep;
   final VoidCallback onTap;
@@ -57,40 +164,54 @@ class RecipeCard extends StatelessWidget {
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(resep.judul,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: serif(size: AppText.body)),
-                    ),
-                    if (tampilStatus) ...[
-                      const SizedBox(width: 8),
-                      StatusChip(resep.status),
+                if (resep.foto.isNotEmpty) ...[
+                  RecipePhoto(data: resep.foto, width: 84, height: 84),
+                  const SizedBox(width: 14),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(resep.judul,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: serif(size: AppText.body)),
+                          ),
+                          if (tampilStatus) ...[
+                            const SizedBox(width: 8),
+                            StatusChip(resep.status),
+                          ],
+                        ],
+                      ),
+                      if (resep.deskripsi.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(resep.deskripsi,
+                            maxLines: 2, overflow: TextOverflow.ellipsis),
+                      ],
+                      const SizedBox(height: 10),
+                      Text(
+                          'oleh ${resep.namaPembuat}  ·  ±${resep.kalori} kkal',
+                          style: const TextStyle(
+                              color: AppColors.textHint,
+                              fontSize: AppText.small)),
+                      if (tampilStatus &&
+                          resep.status == RecipeStatus.rejected &&
+                          resep.alasanTolak.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text('Alasan: ${resep.alasanTolak}',
+                            style: const TextStyle(
+                                color: Color(0xFFB5524A),
+                                fontSize: AppText.small)),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-                if (resep.deskripsi.isNotEmpty) ...[
-                  const SizedBox(height: 6),
-                  Text(resep.deskripsi,
-                      maxLines: 2, overflow: TextOverflow.ellipsis),
-                ],
-                const SizedBox(height: 10),
-                Text('oleh ${resep.namaPembuat}  ·  ±${resep.kalori} kkal',
-                    style: const TextStyle(
-                        color: AppColors.textHint, fontSize: AppText.small)),
-                if (tampilStatus &&
-                    resep.status == RecipeStatus.rejected &&
-                    resep.alasanTolak.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text('Alasan: ${resep.alasanTolak}',
-                      style: const TextStyle(
-                          color: Color(0xFFB5524A), fontSize: AppText.small)),
-                ],
               ],
             ),
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/cloudinary_service.dart';
 import '../theme.dart';
 import 'food_detail_sheet.dart';
 
@@ -79,10 +80,10 @@ class PrimaryButton extends StatelessWidget {
         onPressed: loading ? null : onPressed,
         child: loading
             ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2.5, color: Colors.white))
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(
+                strokeWidth: 2.5, color: Colors.white))
             : Text(label),
       ),
     );
@@ -136,7 +137,7 @@ class AddCircleButton extends StatelessWidget {
         width: 44,
         height: 44,
         decoration:
-            const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+        const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
         child: const Icon(Icons.add, color: Colors.white, size: 30),
       ),
     );
@@ -152,10 +153,10 @@ class FoodCard extends StatelessWidget {
 
   const FoodCard(
       {super.key,
-      required this.nama,
-      required this.emoji,
-      this.kalori,
-      this.size = 140});
+        required this.nama,
+        required this.emoji,
+        this.kalori,
+        this.size = 140});
 
   @override
   Widget build(BuildContext context) {
@@ -166,15 +167,7 @@ class FoodCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: size,
-            height: size,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-                color: AppColors.sageLight.withOpacity(0.55),
-                borderRadius: BorderRadius.circular(18)),
-            child: Text(emoji, style: TextStyle(fontSize: size * 0.42)),
-          ),
+          FoodPhoto(nama: nama, emoji: emoji, size: size),
           const SizedBox(height: 8),
           SizedBox(
             width: size,
@@ -190,6 +183,48 @@ class FoodCard extends StatelessWidget {
                 style: const TextStyle(
                     color: AppColors.textHint, fontSize: AppText.small)),
         ],
+      ),
+    );
+  }
+}
+
+/// Foto makanan dari Cloudinary (folder nutricount/foods, nama file = nama
+/// makanan). Kalau fotonya belum diunggah, tampil emoji.
+class FoodPhoto extends StatelessWidget {
+  final String nama;
+  final String emoji;
+  final double size;
+  final double radius;
+
+  const FoodPhoto({
+    super.key,
+    required this.nama,
+    required this.emoji,
+    required this.size,
+    this.radius = 18,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cadangan = Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      color: AppColors.sageLight.withOpacity(0.55),
+      child: Text(emoji, style: TextStyle(fontSize: size * 0.42)),
+    );
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Image.network(
+          CloudinaryService.fotoMakanan(nama, width: (size * 2).round()),
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, progress) =>
+          progress == null ? child : cadangan,
+          errorBuilder: (_, __, ___) => cadangan,
+        ),
       ),
     );
   }
