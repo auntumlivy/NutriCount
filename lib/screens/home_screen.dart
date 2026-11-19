@@ -19,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _fs = DataService.instance;
   late final Stream<List<BmiRecord>> _bmiStream = _fs.bmiStream();
   late final Stream<List<FoodLog>> _logStream =
-      _fs.foodsByDay(BmiUtils.dayKey(DateTime.now()));
+  _fs.foodsByDay(BmiUtils.dayKey(DateTime.now()));
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 8),
                         StatCircle(
                           value:
-                              latest == null ? '-' : BmiUtils.fmt1(latest.bmi),
+                          latest == null ? '-' : BmiUtils.fmt1(latest.bmi),
                           size: 124,
                         ),
                       ],
@@ -94,7 +94,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   const SizedBox(height: 32),
                   for (final w in _waktuMakan)
-                    _mealSection(w, logs.where((l) => l.waktu == w).toList()),
+                    _mealSection(
+                      w,
+                      logs.where((l) => l.waktu == w).toList(),
+                      latest?.kategori,
+                    ),
                 ],
               );
             },
@@ -104,16 +108,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _mealSection(String waktu, List<FoodLog> items) {
+  Widget _mealSection(String waktu, List<FoodLog> items, String? bmiKategori) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Column(
         children: [
           Row(
             children: [
-              Expanded(child: Text(waktu, style: serif(size: AppText.subtitle))),
+              Expanded(
+                  child: Text(waktu, style: serif(size: AppText.subtitle))),
               AddCircleButton(
-                  onTap: () => showPilihMakananSheet(context, waktu: waktu)),
+                onTap: () => showPilihMakananSheet(
+                  context,
+                  waktu: waktu,
+                  bmiKategori: bmiKategori,
+                ),
+              ),
             ],
           ),
           for (final f in items)
@@ -124,7 +134,8 @@ class _HomeScreenState extends State<HomeScreen> {
               subtitle: Text('${f.kalori} kkal'),
               onTap: () => showFoodDialog(context, waktu: waktu, existing: f),
               trailing: IconButton(
-                icon: const Icon(Icons.delete_outline, color: AppColors.textHint),
+                icon: const Icon(Icons.delete_outline,
+                    color: AppColors.textHint),
                 onPressed: () => _fs.deleteFood(f.id),
               ),
             ),

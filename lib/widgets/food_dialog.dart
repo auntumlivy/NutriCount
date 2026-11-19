@@ -9,15 +9,13 @@ import '../utils/bmi_utils.dart';
 import 'app_widgets.dart';
 
 /// Dialog isi manual: tambah (Create) atau ubah (Update) catatan makanan.
-/// [simpanKeDaftar] = true -> makanan juga disimpan ke daftar pilihan pribadi.
-/// Mengembalikan true jika tersimpan.
 Future<bool> showFoodDialog(
-  BuildContext context, {
-  required String waktu,
-  FoodLog? existing,
-  String? namaAwal,
-  bool simpanKeDaftar = false,
-}) async {
+    BuildContext context, {
+      required String waktu,
+      FoodLog? existing,
+      String? namaAwal,
+      bool simpanKeDaftar = false,
+    }) async {
   final nama = TextEditingController(text: existing?.nama ?? namaAwal ?? '');
   final kal = TextEditingController(text: existing?.kalori.toString() ?? '');
   final fs = DataService.instance;
@@ -53,7 +51,6 @@ Future<bool> showFoodDialog(
                   content: Text('Isi nama makanan dan kalori dengan benar.')));
               return;
             }
-            // Tidak di-await: data langsung tampil dan disinkronkan di latar belakang.
             if (existing == null) {
               final now = DateTime.now();
               if (simpanKeDaftar) {
@@ -62,12 +59,12 @@ Future<bool> showFoodDialog(
               }
               unawaited(fs
                   .addFood(FoodLog(
-                    nama: nama.text.trim(),
-                    kalori: k,
-                    waktu: waktu,
-                    hari: BmiUtils.dayKey(now),
-                    tanggal: now,
-                  ))
+                nama: nama.text.trim(),
+                kalori: k,
+                waktu: waktu,
+                hari: BmiUtils.dayKey(now),
+                tanggal: now,
+              ))
                   .catchError((_) {}));
             } else {
               unawaited(
@@ -86,21 +83,25 @@ Future<bool> showFoodDialog(
 }
 
 /// Bottom sheet daftar makanan: pilih salah satu, atau tambah makanan sendiri.
-Future<void> showPilihMakananSheet(BuildContext context,
-    {required String waktu}) {
+Future<void> showPilihMakananSheet(
+    BuildContext context, {
+      required String waktu,
+      String? bmiKategori, // <--- Terima parameter kategori BMI dari home_screen
+    }) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.white,
     shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
-    builder: (_) => _PilihMakananSheet(waktu: waktu),
+    builder: (_) => _PilihMakananSheet(waktu: waktu, bmiKategori: bmiKategori),
   );
 }
 
 class _PilihMakananSheet extends StatefulWidget {
   final String waktu;
-  const _PilihMakananSheet({required this.waktu});
+  final String? bmiKategori;
+  const _PilihMakananSheet({required this.waktu, this.bmiKategori});
 
   @override
   State<_PilihMakananSheet> createState() => _PilihMakananSheetState();
@@ -112,18 +113,32 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
   late final Stream<List<FoodItem>> _customS = _fs.customFoodsStream();
   final _katalog = BmiUtils.katalog;
   String _q = '';
+  bool _onlyRecommended = false; // State status toggle filter
+
+  // Logika penentu rekomendasi otomatis berbasis range kalori & BMI
+  bool _isRecommended(int kalori) {
+    if (widget.bmiKategori == null) return true;
+    final kat = widget.bmiKategori!.toLowerCase();
+
+    if (kat.contains('overweight') || kat.contains('obese')) {
+      return kalori <= 180; // Makanan porsi rendah kalori
+    } else if (kat.contains('underweight')) {
+      return kalori >= 200; // Makanan padat kalori
+    }
+    return true; // Normal
+  }
 
   void _catat(FoodItem f) {
     final messenger = ScaffoldMessenger.of(context);
     final now = DateTime.now();
     unawaited(_fs
         .addFood(FoodLog(
-          nama: f.nama,
-          kalori: f.kalori,
-          waktu: widget.waktu,
-          hari: BmiUtils.dayKey(now),
-          tanggal: now,
-        ))
+      nama: f.nama,
+      kalori: f.kalori,
+      waktu: widget.waktu,
+      hari: BmiUtils.dayKey(now),
+      tanggal: now,
+    ))
         .catchError((_) {}));
     Navigator.pop(context);
     messenger.showSnackBar(SnackBar(
@@ -148,8 +163,8 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
   @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
-    final tinggi =
-        math.min(mq.size.height * 0.85, mq.size.height - mq.viewInsets.bottom - 60);
+    final tinggi = math.min(
+        mq.size.height * 0.85, mq.size.height - mq.viewInsets.bottom - 60);
 
     return Padding(
       padding: EdgeInsets.only(bottom: mq.viewInsets.bottom),
@@ -162,7 +177,16 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
             builder: (context, snap) {
               final custom = snap.data ?? [];
               final q = _q.toLowerCase();
-              bool cocok(FoodItem f) => f.nama.toLowerCase().contains(q);
+
+              // Saring makanan berdasarkan query pencarian & toggle rekomendasi
+              bool cocok(FoodItem f) {
+                final matchName = f.nama.toLowerCase().contains(q);
+                if (_onlyRecommended) {
+                  return matchName && _isRecommended(f.kalori);
+                }
+                return matchName;
+              }
+
               final tampil = [
                 ...custom.where(cocok),
                 ..._katalog.where(cocok),
@@ -181,39 +205,67 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
                         prefixIcon: Icon(Icons.search)),
                   ),
                   const SizedBox(height: 8),
+
+                  // Chip Filter Rekomendasi (Hanya muncul jika user sudah punya catatan BMI)
+                  if (widget.bmiKategori != null) ...[
+                    Row(
+                      children: [
+                        FilterChip(
+                          label: const Text('Semua'),
+                          selected: !_onlyRecommended,
+                          selectedColor: AppColors.sageLight,
+                          onSelected: (val) {
+                            setState(() => _onlyRecommended = false);
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        FilterChip(
+                          label: Text('Rekomendasi (${widget.bmiKategori})'),
+                          selected: _onlyRecommended,
+                          selectedColor: AppColors.sageLight,
+                          onSelected: (val) {
+                            setState(() => _onlyRecommended = true);
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+
                   Expanded(
                     child: tampil.isEmpty
                         ? Center(
-                            child: Text(
-                                'Makanan tidak ditemukan.\nTambahkan sendiri di bawah.',
-                                textAlign: TextAlign.center,
-                                style:
-                                    const TextStyle(color: AppColors.textHint)),
-                          )
+                      child: Text(
+                          'Makanan tidak ditemukan.\nTambahkan sendiri di bawah.',
+                          textAlign: TextAlign.center,
+                          style:
+                          const TextStyle(color: AppColors.textHint)),
+                    )
                         : ListView.builder(
-                            itemCount: tampil.length,
-                            itemBuilder: (_, i) {
-                              final f = tampil[i];
-                              final milikSendiri = f.id != null;
-                              return ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: Text(f.emoji,
-                                    style: const TextStyle(fontSize: AppText.display)),
-                                title: Text(f.nama),
-                                subtitle: Text(
-                                    '±${f.kalori} kkal${milikSendiri ? ' • buatanmu' : ''}'),
-                                onTap: () => _catat(f),
-                                trailing: milikSendiri
-                                    ? IconButton(
-                                        icon: const Icon(Icons.delete_outline,
-                                            color: AppColors.textHint),
-                                        onPressed: () =>
-                                            _fs.deleteCustomFood(f.id!),
-                                      )
-                                    : null,
-                              );
-                            },
-                          ),
+                      itemCount: tampil.length,
+                      itemBuilder: (_, i) {
+                        final f = tampil[i];
+                        final milikSendiri = f.id != null;
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Text(f.emoji,
+                              style: const TextStyle(
+                                  fontSize: AppText.display)),
+                          title: Text(f.nama),
+                          subtitle: Text(
+                              '±${f.kalori} kkal${milikSendiri ? ' • buatanmu' : ''}'),
+                          onTap: () => _catat(f),
+                          trailing: milikSendiri
+                              ? IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                color: AppColors.textHint),
+                            onPressed: () =>
+                                _fs.deleteCustomFood(f.id!),
+                          )
+                              : null,
+                        );
+                      },
+                    ),
                   ),
                   const SizedBox(height: 8),
                   SizedBox(

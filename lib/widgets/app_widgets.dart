@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../services/cloudinary_service.dart';
+import '../data/resep_bawaan.dart';
 import '../theme.dart';
 import 'food_detail_sheet.dart';
 
@@ -144,7 +144,7 @@ class AddCircleButton extends StatelessWidget {
   }
 }
 
-/// Kartu makanan (emoji sebagai pengganti foto; ganti dengan Image.asset jika punya foto).
+/// Kartu makanan dengan foto real (otomatis fallback ke emoji jika offline/gagal load).
 class FoodCard extends StatelessWidget {
   final String nama;
   final String emoji;
@@ -160,72 +160,93 @@ class FoodCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fotoUrl = kFotoMakanan[nama];
+
     return InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: () =>
           showFoodDetail(context, nama: nama, emoji: emoji, kalori: kalori),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FoodPhoto(nama: nama, emoji: emoji, size: size),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: size,
-            child: Text(nama,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: serif(
-                    size: size < 110 ? AppText.caption : AppText.body)),
-          ),
-          if (kalori != null)
-            Text('±$kalori kkal',
-                style: const TextStyle(
-                    color: AppColors.textHint, fontSize: AppText.small)),
-        ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.sageLight.withOpacity(0.8)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Bagian Foto Makanan Real
+            Expanded(
+              child: fotoUrl != null
+                  ? Image.network(
+                fotoUrl,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return Container(
+                    color: AppColors.sageLight.withOpacity(0.35),
+                    child: const Center(
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.sageDark,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) => _emojiFallback(),
+              )
+                  : _emojiFallback(),
+            ),
+            // Bagian Judul & Kalori di Bawah Foto
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nama,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: serif(
+                      size: size < 110 ? AppText.caption : AppText.body,
+                    ),
+                  ),
+                  if (kalori != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '±$kalori kkal',
+                      style: const TextStyle(
+                        color: AppColors.textHint,
+                        fontSize: AppText.small,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-}
 
-/// Foto makanan dari Cloudinary (folder nutricount/foods, nama file = nama
-/// makanan). Kalau fotonya belum diunggah, tampil emoji.
-class FoodPhoto extends StatelessWidget {
-  final String nama;
-  final String emoji;
-  final double size;
-  final double radius;
-
-  const FoodPhoto({
-    super.key,
-    required this.nama,
-    required this.emoji,
-    required this.size,
-    this.radius = 18,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cadangan = Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
+  Widget _emojiFallback() {
+    return Container(
       color: AppColors.sageLight.withOpacity(0.55),
+      alignment: Alignment.center,
       child: Text(emoji, style: TextStyle(fontSize: size * 0.42)),
-    );
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: Image.network(
-          CloudinaryService.fotoMakanan(nama, width: (size * 2).round()),
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, progress) =>
-          progress == null ? child : cadangan,
-          errorBuilder: (_, __, ___) => cadangan,
-        ),
-      ),
     );
   }
 }

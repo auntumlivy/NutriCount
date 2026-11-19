@@ -87,9 +87,21 @@ class _FoodDetailState extends State<_FoodDetail> {
     child: Text(judul, style: serif(size: AppText.subtitle)),
   );
 
+  Widget _emojiBox() => Container(
+    width: 140,
+    height: 140,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: AppColors.sageLight.withOpacity(0.55),
+      borderRadius: BorderRadius.circular(24),
+    ),
+    child: Text(widget.emoji, style: const TextStyle(fontSize: 56)),
+  );
+
   @override
   Widget build(BuildContext context) {
     final resep = cariResepBawaan(widget.nama);
+    final fotoUrl = kFotoMakanan[widget.nama];
     final cocok = [
       for (final k in const ['Underweight', 'Normal', 'Overweight', 'Obesitas'])
         if (BmiUtils.makananUntuk(k).any((f) => f.nama == widget.nama)) k
@@ -110,8 +122,32 @@ class _FoodDetailState extends State<_FoodDetail> {
         ),
         const SizedBox(height: 20),
         Center(
-          child: FoodPhoto(
-              nama: widget.nama, emoji: widget.emoji, size: 120, radius: 24),
+          child: fotoUrl != null
+              ? ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Image.network(
+              fotoUrl,
+              width: double.infinity,
+              height: 210,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, progress) {
+                if (progress == null) return child;
+                return Container(
+                  width: double.infinity,
+                  height: 210,
+                  color: AppColors.sageLight.withOpacity(0.35),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: AppColors.sageDark,
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (_, __, ___) => _emojiBox(),
+            ),
+          )
+              : _emojiBox(),
         ),
         const SizedBox(height: 16),
         Text(widget.nama,
