@@ -64,6 +64,7 @@ class Recipe {
   final List<String> bahan;
   final List<String> langkah;
   final int kalori; // per porsi
+  final String kategoriBMI; // kategori target resep
   final String sumberUrl; // link asal resep (opsional)
   final String foto; // URL foto resep di Cloudinary (opsional)
   final String uid; // pembuat
@@ -79,6 +80,7 @@ class Recipe {
     required this.bahan,
     required this.langkah,
     required this.kalori,
+    this.kategoriBMI = 'Semua Kategori',
     this.sumberUrl = '',
     this.foto = '',
     this.uid = '',
@@ -93,6 +95,7 @@ class Recipe {
     String? uid,
     String? status,
     String? alasanTolak,
+    String? kategoriBMI,
   }) =>
       Recipe(
         id: id ?? this.id,
@@ -101,6 +104,7 @@ class Recipe {
         bahan: bahan,
         langkah: langkah,
         kalori: kalori,
+        kategoriBMI: kategoriBMI ?? this.kategoriBMI,
         sumberUrl: sumberUrl,
         foto: foto,
         uid: uid ?? this.uid,
