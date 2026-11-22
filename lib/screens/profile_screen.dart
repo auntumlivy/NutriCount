@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -195,21 +194,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: ClipOval(
             child: _fotoUrl != null && _fotoUrl!.isNotEmpty
                 ? Image.network(
-                    _fotoUrl!,
-                    width: 150,
-                    height: 150,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.person,
-                      size: 84,
-                      color: Colors.white,
-                    ),
-                  )
+              _fotoUrl!,
+              width: 150,
+              height: 150,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Icon(
+                Icons.person,
+                size: 84,
+                color: Colors.white,
+              ),
+            )
                 : const Icon(
-                    Icons.person,
-                    size: 84,
-                    color: Colors.white,
-                  ),
+              Icons.person,
+              size: 84,
+              color: Colors.white,
+            ),
           ),
         ),
 
@@ -224,18 +223,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.all(10),
               child: _uploadingFoto
                   ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
                   : const Icon(
-                      Icons.camera_alt,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+                Icons.camera_alt,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ),
@@ -251,32 +250,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    return SafeArea(
+    return HeaderPage(
+      title: 'Profil',
+      subtitle: 'Kelola akunmu',
+      icon: Icons.person_outline,
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Profil',
-                style: serif(size: AppText.hero),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
             _buildFotoProfil(),
-
-            const SizedBox(height: 8),
-
-            const Text(
-              'Ketuk ikon kamera untuk mengganti foto',
-              style: TextStyle(
-                color: AppColors.textHint,
-                fontSize: AppText.small,
-              ),
-            ),
 
             const SizedBox(height: 16),
 

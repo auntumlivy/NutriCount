@@ -23,7 +23,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    return HeaderPage(
+      title: 'NutriCount',
+      subtitle: 'Pantau kalori harianmu',
+      icon: Icons.local_fire_department_outlined,
       child: StreamBuilder<List<BmiRecord>>(
         stream: _bmiStream,
         builder: (context, bmiSnap) {
@@ -41,8 +44,6 @@ class _HomeScreenState extends State<HomeScreen> {
               return ListView(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
                 children: [
-                  Text('NutriCount', style: serif(size: AppText.title)),
-                  const SizedBox(height: 24),
                   Center(
                     child: Column(
                       children: [

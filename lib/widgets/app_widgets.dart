@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../data/resep_bawaan.dart';
 import '../theme.dart';
@@ -247,6 +248,113 @@ class FoodCard extends StatelessWidget {
       color: AppColors.sageLight.withOpacity(0.55),
       alignment: Alignment.center,
       child: Text(emoji, style: TextStyle(fontSize: size * 0.42)),
+    );
+  }
+}
+
+/// Header berwarna di bagian atas halaman (judul, subjudul, ikon).
+class PageHeader extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final IconData? icon;
+
+  const PageHeader({super.key, required this.title, this.subtitle, this.icon});
+
+  Widget _lingkaran(double ukuran, double opacity) => Container(
+    width: ukuran,
+    height: ukuran,
+    decoration: BoxDecoration(
+        color: Colors.white.withOpacity(opacity), shape: BoxShape.circle),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final atas = MediaQuery.of(context).padding.top; // tinggi status bar
+    return Container(
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.sageLight, AppColors.sage],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+      ),
+      child: Stack(
+        children: [
+          Positioned(right: -30, top: -30, child: _lingkaran(130, 0.18)),
+          Positioned(right: 70, bottom: -45, child: _lingkaran(90, 0.12)),
+          Padding(
+            padding: EdgeInsets.fromLTRB(24, atas + 18, 24, 22),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(title, style: serif(size: AppText.title)),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 4),
+                        Text(subtitle!,
+                            style: TextStyle(
+                                fontSize: AppText.small,
+                                color: AppColors.textDark.withOpacity(0.75))),
+                      ],
+                    ],
+                  ),
+                ),
+                if (icon != null)
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.55),
+                        shape: BoxShape.circle),
+                    child: Icon(icon, color: AppColors.textDark),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Halaman dengan header berwarna di atas, isi di bawahnya.
+/// [tampilHeader] = false -> tanpa header (misalnya saat halaman dibuka
+/// lewat Navigator.push dan sudah punya AppBar).
+class HeaderPage extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final IconData? icon;
+  final bool tampilHeader;
+  final Widget child;
+
+  const HeaderPage({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.icon,
+    this.tampilHeader = true,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!tampilHeader) return SafeArea(child: child);
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark
+          .copyWith(statusBarColor: Colors.transparent),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          PageHeader(title: title, subtitle: subtitle, icon: icon),
+          Expanded(child: child),
+        ],
+      ),
     );
   }
 }

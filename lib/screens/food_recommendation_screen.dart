@@ -37,13 +37,17 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
     return Scaffold(
       appBar: dipush
           ? AppBar(
-              backgroundColor: Colors.white,
-              elevation: 0,
-              iconTheme: const IconThemeData(color: AppColors.textDark),
-              title: Text('Rekomendasi Makanan', style: serif(size: AppText.section)),
-            )
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.textDark),
+        title: Text('Rekomendasi Makanan', style: serif(size: AppText.section)),
+      )
           : null,
-      body: SafeArea(
+      body: HeaderPage(
+        tampilHeader: !dipush,
+        title: 'Rekomendasi Makanan',
+        subtitle: 'Sesuai kategori BMI-mu',
+        icon: Icons.restaurant_menu,
         child: StreamBuilder<List<BmiRecord>>(
           stream: _bmiS,
           builder: (context, snap) {
@@ -56,22 +60,22 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
                 widget.targetKalori ?? latest?.kalori;
 
             final kaloriSarapan =
-                targetKalori == null ? null : targetKalori * 0.25;
+            targetKalori == null ? null : targetKalori * 0.25;
 
             final kaloriSiang =
-                targetKalori == null ? null : targetKalori * 0.35;
+            targetKalori == null ? null : targetKalori * 0.35;
 
             final kaloriMalam =
-                targetKalori == null ? null : targetKalori * 0.30;
+            targetKalori == null ? null : targetKalori * 0.30;
 
             final kaloriSnack =
-                targetKalori == null ? null : targetKalori * 0.10;
+            targetKalori == null ? null : targetKalori * 0.10;
 
             final info = latest == null
                 ? 'Belum ada data BMI. Hitung & simpan BMI di tab BMI agar rekomendasi menyesuaikan.'
                 : (aktif == latest.kategori
-                    ? 'Kategori BMI terakhirmu: $aktif'
-                    : 'Menampilkan rekomendasi untuk kategori $aktif');
+                ? 'Kategori BMI terakhirmu: $aktif'
+                : 'Menampilkan rekomendasi untuk kategori $aktif');
 
             return CustomScrollView(
               slivers: [
@@ -116,13 +120,6 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
                 if (!dipush)
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                      child: Text('Rekomendasi Makanan', style: serif(size: AppText.title)),
-                    ),
-                  ),
-                if (!dipush)
-                  SliverToBoxAdapter(
-                    child: Padding(
                       padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
                       child: Align(
                         alignment: Alignment.centerLeft,
@@ -137,7 +134,7 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
                               context,
                               MaterialPageRoute(
                                   builder: (_) =>
-                                      const CommunityRecipesScreen())),
+                                  const CommunityRecipesScreen())),
                           icon: const Icon(Icons.groups_2_outlined, size: 20),
                           label: const Text('Resep Komunitas'),
                         ),
@@ -201,7 +198,7 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
                       childAspectRatio: 0.66,
                     ),
                     delegate: SliverChildBuilderDelegate(
-                      (_, i) => FoodCard(
+                          (_, i) => FoodCard(
                         nama: foods[i].nama,
                         emoji: foods[i].emoji,
                         kalori: foods[i].kalori,
@@ -219,7 +216,6 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
     ); // Scaffold
   } // penutup build()
 
-  // TEMPEL FUNGSI DI SINI
   Widget _barisKalori(String label, double kalori) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -242,4 +238,4 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
     );
   }
 
-} // penutup class
+}

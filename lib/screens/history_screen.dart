@@ -19,11 +19,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
   late final Stream<List<BmiRecord>> _bmiS = _fs.bmiStream();
   late final Stream<Map<String, dynamic>?> _userS = _fs.userStream();
   late final Stream<List<FoodLog>> _logS =
-      _fs.foodsSince(DateTime.now().subtract(const Duration(days: 6)));
+  _fs.foodsSince(DateTime.now().subtract(const Duration(days: 6)));
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    return HeaderPage(
+      title: 'Riwayat BMI',
+      subtitle: 'Lihat perkembangan berat dan kalori',
+      icon: Icons.show_chart,
       child: StreamBuilder<List<BmiRecord>>(
         stream: _bmiS,
         builder: (context, bmiSnap) {
@@ -40,8 +43,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   return ListView(
                     padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
                     children: [
-                      Text('Riwayat BMI', style: serif(size: AppText.title)),
-                      const SizedBox(height: 22),
                       _beratCard(latest, target),
                       const SizedBox(height: 18),
                       _bmiCard(latest),
@@ -141,7 +142,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               TextField(
                 controller: b,
                 keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(hintText: 'Berat saat ini (kg)'),
               ),
             const SizedBox(height: 12),
@@ -235,7 +236,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             titlesData: FlTitlesData(
               topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
               rightTitles:
-                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
