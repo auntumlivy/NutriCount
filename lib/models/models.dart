@@ -33,6 +33,10 @@ class FoodLog {
   final String hari; // yyyy-MM-dd
   final DateTime tanggal;
 
+  /// true = makanan dari daftar admin / resep (kalori tidak boleh diubah user).
+  /// false = makanan input user sendiri (boleh diedit).
+  final bool dariAdmin;
+
   FoodLog({
     this.id = '',
     required this.nama,
@@ -42,8 +46,8 @@ class FoodLog {
     required this.waktu,
     required this.hari,
     required this.tanggal,
+    this.dariAdmin = false, // baru
   });
-
   /// Total kalori = kalori per porsi x jumlah.
   int get total => kalori * jumlah;
 }

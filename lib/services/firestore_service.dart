@@ -37,6 +37,7 @@ Map<String, dynamic> _logToMap(FoodLog f) => {
   'waktu': f.waktu,
   'hari': f.hari,
   'tanggal': Timestamp.fromDate(f.tanggal),
+  'dariAdmin': f.dariAdmin, // baru
 };
 
 FoodLog _logFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
@@ -50,6 +51,8 @@ FoodLog _logFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
     waktu: m['waktu'] ?? 'Snack',
     hari: m['hari'] ?? '',
     tanggal: (m['tanggal'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    // Data lama tanpa field dariAdmin: dianggap dari admin kalau punya foto.
+    dariAdmin: m['dariAdmin'] as bool? ?? ((m['foto'] ?? '') as String).isNotEmpty,
   );
 }
 

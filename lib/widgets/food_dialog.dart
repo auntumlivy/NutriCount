@@ -135,6 +135,7 @@ class _Pilihan {
   final String foto;
   final String? idCustom; // terisi untuk makanan buatan sendiri
   final bool resep; // true = dari resep komunitas
+  bool get dariAdmin => idCustom == null;
 
   const _Pilihan({
     required this.nama,
@@ -224,6 +225,7 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
         waktu: widget.waktu,
         hari: BmiUtils.dayKey(widget.tanggal),
         tanggal: _waktuCatat(widget.tanggal),
+        dariAdmin: p.dariAdmin,
       ))
           .catchError((_) {}));
     }
