@@ -26,7 +26,9 @@ class BmiRecord {
 class FoodLog {
   final String id;
   final String nama;
-  final int kalori;
+  final int kalori; // kalori PER PORSI
+  final int jumlah; // jumlah porsi (default 1)
+  final String foto; // URL foto (kosong = pakai foto rekomendasi / emoji)
   final String waktu; // Sarapan / Lunch / Dinner / Snack
   final String hari; // yyyy-MM-dd
   final DateTime tanggal;
@@ -35,10 +37,15 @@ class FoodLog {
     this.id = '',
     required this.nama,
     required this.kalori,
+    this.jumlah = 1,
+    this.foto = '',
     required this.waktu,
     required this.hari,
     required this.tanggal,
   });
+
+  /// Total kalori = kalori per porsi x jumlah.
+  int get total => kalori * jumlah;
 }
 
 class FoodItem {

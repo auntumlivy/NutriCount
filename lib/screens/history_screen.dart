@@ -205,7 +205,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         7, (i) => DateTime(now.year, now.month, now.day - (6 - i)));
     final totals = <String, int>{};
     for (final l in logs) {
-      totals[l.hari] = (totals[l.hari] ?? 0) + l.kalori;
+      totals[l.hari] = (totals[l.hari] ?? 0) + l.total;
     }
     final spots = [
       for (var i = 0; i < 7; i++)

@@ -32,6 +32,8 @@ BmiRecord _bmiFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
 Map<String, dynamic> _logToMap(FoodLog f) => {
   'nama': f.nama,
   'kalori': f.kalori,
+  'jumlah': f.jumlah,
+  'foto': f.foto,
   'waktu': f.waktu,
   'hari': f.hari,
   'tanggal': Timestamp.fromDate(f.tanggal),
@@ -43,6 +45,8 @@ FoodLog _logFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
     id: d.id,
     nama: m['nama'] ?? '',
     kalori: (m['kalori'] ?? 0).toInt(),
+    jumlah: ((m['jumlah'] ?? 1) as num).toInt(),
+    foto: m['foto'] ?? '',
     waktu: m['waktu'] ?? 'Snack',
     hari: m['hari'] ?? '',
     tanggal: (m['tanggal'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -135,6 +139,10 @@ class FirestoreService implements DataService {
   @override
   Future<void> updateFood(String id, String nama, int kalori) =>
       _logs.doc(id).update({'nama': nama, 'kalori': kalori});
+
+  @override
+  Future<void> updateFoodJumlah(String id, int jumlah) =>
+      _logs.doc(id).update({'jumlah': jumlah});
 
   @override
   Future<void> deleteFood(String id) => _logs.doc(id).delete();
