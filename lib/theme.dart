@@ -70,8 +70,58 @@ ThemeData buildTheme() {
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: Colors.white,
-      indicatorColor: AppColors.sageLight,
+      backgroundColor: AppColors.sage,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      height: 68,
+      // Penanda menu yang dipilih: pil putih transparan
+      indicatorColor: Colors.white.withOpacity(0.55),
+      iconTheme: WidgetStateProperty.resolveWith((states) {
+        final aktif = states.contains(WidgetState.selected);
+        return IconThemeData(
+          size: 26,
+          color: aktif
+              ? AppColors.textDark
+              : AppColors.textDark.withOpacity(0.6),
+        );
+      }),
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        final aktif = states.contains(WidgetState.selected);
+        return TextStyle(
+          fontSize: AppText.caption,
+          fontWeight: aktif ? FontWeight.w700 : FontWeight.w500,
+          color: aktif
+              ? AppColors.textDark
+              : AppColors.textDark.withOpacity(0.6),
+        );
+      }),
     ),
   );
+}
+
+/// NavigationBar dengan sudut atas membulat (warna hijau diatur di
+/// navigationBarTheme di atas). Dipakai menggantikan NavigationBar biasa.
+class RoundedNavigationBar extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
+  final List<Widget> destinations;
+
+  const RoundedNavigationBar({
+    super.key,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    required this.destinations,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: NavigationBar(
+        selectedIndex: selectedIndex,
+        onDestinationSelected: onDestinationSelected,
+        destinations: destinations,
+      ),
+    );
+  }
 }

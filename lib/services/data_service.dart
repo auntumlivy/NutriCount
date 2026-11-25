@@ -24,6 +24,7 @@ abstract class DataService {
 
   Future<void> addFood(FoodLog f);
   Future<void> updateFood(String id, String nama, int kalori);
+  Future<void> updateFoodJumlah(String id, int jumlah);
   Future<void> deleteFood(String id);
   Stream<List<FoodLog>> foodsByDay(String hari);
   Stream<List<FoodLog>> foodsSince(DateTime since);

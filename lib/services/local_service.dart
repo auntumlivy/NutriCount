@@ -133,6 +133,8 @@ class LocalService implements DataService {
         id: _id(),
         nama: f.nama,
         kalori: f.kalori,
+        jumlah: f.jumlah,
+        foto: f.foto,
         waktu: f.waktu,
         hari: f.hari,
         tanggal: f.tanggal,
@@ -144,14 +146,35 @@ class LocalService implements DataService {
   Future<void> updateFood(String id, String nama, int kalori) async {
     _logs.set(_logs.items
         .map((f) => f.id == id
-            ? FoodLog(
-                id: f.id,
-                nama: nama,
-                kalori: kalori,
-                waktu: f.waktu,
-                hari: f.hari,
-                tanggal: f.tanggal)
-            : f)
+        ? FoodLog(
+        id: f.id,
+        nama: nama,
+        kalori: kalori,
+        jumlah: f.jumlah,
+        foto: f.foto,
+        waktu: f.waktu,
+        hari: f.hari,
+        tanggal: f.tanggal,
+        dariAdmin: f.dariAdmin)
+        : f)
+        .toList());
+  }
+
+  @override
+  Future<void> updateFoodJumlah(String id, int jumlah) async {
+    _logs.set(_logs.items
+        .map((f) => f.id == id
+        ? FoodLog(
+        id: f.id,
+        nama: f.nama,
+        kalori: f.kalori,
+        jumlah: jumlah,
+        foto: f.foto,
+        waktu: f.waktu,
+        hari: f.hari,
+        tanggal: f.tanggal,
+        dariAdmin: f.dariAdmin)
+        : f)
         .toList());
   }
 
