@@ -6,7 +6,10 @@ import '../models/models.dart';
 import '../services/data_service.dart';
 import '../theme.dart';
 import '../utils/bmi_utils.dart';
+import '../theme.dart';
+import '../utils/bmi_utils.dart';
 import 'app_widgets.dart';
+import 'food_thumb.dart';
 import 'food_thumb.dart';
 
 /// Gabungkan hari yang dipilih dengan jam sekarang (untuk waktu pencatatan).
@@ -15,9 +18,7 @@ DateTime _waktuCatat(DateTime hari) {
   return DateTime(hari.year, hari.month, hari.day, n.hour, n.minute);
 }
 
-/// Dialog isi manual: tambah (Create) atau ubah (Update) catatan makanan.
-/// [simpanKeDaftar] = true -> makanan juga disimpan ke daftar pilihan pribadi.
-/// Mengembalikan true jika tersimpan.
+/// Dialog ubah catatan makanan lama (dipertahankan untuk kompatibilitas home_screen).
 Future<bool> showFoodDialog(
     BuildContext context, {
       required String waktu,
@@ -63,12 +64,7 @@ Future<bool> showFoodDialog(
                   content: Text('Isi nama makanan dan kalori dengan benar.')));
               return;
             }
-            // Tidak di-await: data langsung tampil dan disinkronkan di latar belakang.
             if (existing == null) {
-              if (simpanKeDaftar) {
-                unawaited(
-                    fs.addCustomFood(nama.text.trim(), k).catchError((_) {}));
-              }
               unawaited(fs
                   .addFood(FoodLog(
                 nama: nama.text.trim(),
@@ -95,8 +91,8 @@ Future<bool> showFoodDialog(
   return ok == true;
 }
 
-/// Bottom sheet "Pilih makanan": cari, filter (Semua / Rekomendasi / Resep
-/// Komunitas), dan tambah makanan sendiri. [sudahAda] = catatan di waktu makan
+/// Bottom sheet "Pilih makanan": cari & pilih makanan dari Rekomendasi atau
+/// Resep Komunitas (tanpa input mandiri). [sudahAda] = catatan di waktu makan
 /// itu, supaya memilih makanan yang sama menambah jumlahnya.
 Future<void> showPilihMakananSheet(
     BuildContext context, {
@@ -133,16 +129,13 @@ class _Pilihan {
   final String emoji;
   final int kalori;
   final String foto;
-  final String? idCustom; // terisi untuk makanan buatan sendiri
-  final bool resep; // true = dari resep komunitas
-  bool get dariAdmin => idCustom == null;
+  final bool resep; // true = dari resep komunitas, false = dari rekomendasi
 
   const _Pilihan({
     required this.nama,
     required this.emoji,
     required this.kalori,
     this.foto = '',
-    this.idCustom,
     this.resep = false,
   });
 }
@@ -167,32 +160,27 @@ class _PilihMakananSheet extends StatefulWidget {
 class _PilihMakananSheetState extends State<_PilihMakananSheet> {
   final _fs = DataService.instance;
   final _cari = TextEditingController();
-  late final Stream<List<FoodItem>> _customS = _fs.customFoodsStream();
   late final Stream<List<Recipe>> _resepS = _fs.approvedRecipesStream();
-  final _katalog = BmiUtils.katalog;
   String _q = '';
   _Filter _filter = _Filter.semua;
 
-  List<_Pilihan> _susun(List<FoodItem> custom, List<Recipe> resep) {
+  List<_Pilihan> _susun(List<Recipe> resep) {
     final q = _q.toLowerCase();
 
-    final milikku = custom
-        .map((f) => _Pilihan(
-        nama: f.nama, emoji: f.emoji, kalori: f.kalori, idCustom: f.id))
-        .toList();
-    final katalog = _katalog
+    final rekom = BmiUtils.makananUntuk(widget.bmiKategori ?? 'Normal')
         .map((f) => _Pilihan(nama: f.nama, emoji: f.emoji, kalori: f.kalori))
         .toList();
-    final rekom = BmiUtils.makananUntuk(widget.bmiKategori ?? 'Normal')
+    final semuaKatalog = BmiUtils.katalog
         .map((f) => _Pilihan(nama: f.nama, emoji: f.emoji, kalori: f.kalori))
         .toList();
     final komunitas = resep
         .map((r) => _Pilihan(
-        nama: r.judul,
-        emoji: '🍽️',
-        kalori: r.kalori,
-        foto: r.foto,
-        resep: true))
+      nama: r.judul,
+      emoji: '🍽️',
+      kalori: r.kalori,
+      foto: r.foto,
+      resep: true,
+    ))
         .toList();
 
     late final List<_Pilihan> dasar;
@@ -204,7 +192,7 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
         dasar = komunitas;
         break;
       case _Filter.semua:
-        dasar = [...milikku, ...katalog, ...komunitas];
+        dasar = [...semuaKatalog, ...komunitas];
         break;
     }
     return dasar.where((p) => p.nama.toLowerCase().contains(q)).toList();
@@ -225,7 +213,7 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
         waktu: widget.waktu,
         hari: BmiUtils.dayKey(widget.tanggal),
         tanggal: _waktuCatat(widget.tanggal),
-        dariAdmin: p.dariAdmin,
+        dariAdmin: true,
       ))
           .catchError((_) {}));
     }
@@ -235,15 +223,6 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
         duration: const Duration(seconds: 2)));
   }
 
-  Future<void> _tambahSendiri() async {
-    final ok = await showFoodDialog(context,
-        waktu: widget.waktu,
-        namaAwal: _cari.text.trim(),
-        simpanKeDaftar: true,
-        tanggal: widget.tanggal);
-    if (ok && mounted) Navigator.pop(context);
-  }
-
   @override
   void dispose() {
     _cari.dispose();
@@ -251,9 +230,7 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
   }
 
   Widget _baris(_Pilihan p) {
-    final sub = StringBuffer('±${p.kalori} kkal');
-    if (p.resep) sub.write(' • resep komunitas');
-    if (p.idCustom != null) sub.write(' • buatanmu');
+    final sumber = p.resep ? 'Resep komunitas' : 'Rekomendasi';
 
     return InkWell(
       onTap: () => _catat(p),
@@ -273,23 +250,16 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
                       style: const TextStyle(
                           fontSize: AppText.body, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
-                  Text(sub.toString(),
+                  Text('±${p.kalori} kkal • $sumber',
                       style: const TextStyle(
                           color: AppColors.textHint, fontSize: AppText.small)),
                 ],
               ),
             ),
-            if (p.idCustom != null)
-              IconButton(
-                icon: const Icon(Icons.delete_outline,
-                    color: AppColors.textHint),
-                onPressed: () => _fs.deleteCustomFood(p.idCustom!),
-              )
-            else
-              const Padding(
-                padding: EdgeInsets.all(8),
-                child: Icon(Icons.add_circle_outline, color: AppColors.sageDark),
-              ),
+            const Padding(
+              padding: EdgeInsets.all(8),
+              child: Icon(Icons.add_circle_outline, color: AppColors.sageDark),
+            ),
           ],
         ),
       ),
@@ -300,7 +270,7 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
     final tinggi = math.min(
-        mq.size.height * 0.88, mq.size.height - mq.viewInsets.bottom - 60);
+        mq.size.height * 0.85, mq.size.height - mq.viewInsets.bottom - 60);
 
     return Padding(
       padding: EdgeInsets.only(bottom: mq.viewInsets.bottom),
@@ -308,81 +278,62 @@ class _PilihMakananSheetState extends State<_PilihMakananSheet> {
         height: tinggi,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
-          child: StreamBuilder<List<FoodItem>>(
-            stream: _customS,
-            builder: (context, customSnap) {
-              return StreamBuilder<List<Recipe>>(
-                stream: _resepS,
-                builder: (context, resepSnap) {
-                  final daftar =
-                  _susun(customSnap.data ?? [], resepSnap.data ?? []);
+          child: StreamBuilder<List<Recipe>>(
+            stream: _resepS,
+            builder: (context, resepSnap) {
+              final daftar = _susun(resepSnap.data ?? []);
 
-                  return Column(
-                    children: [
-                      Text('Pilih makanan • ${widget.waktu}',
-                          style: serif(size: AppText.subtitle)),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _cari,
-                        onChanged: (v) => setState(() => _q = v.trim()),
-                        decoration: const InputDecoration(
-                            hintText: 'Cari makanan...',
-                            prefixIcon: Icon(Icons.search)),
-                      ),
-                      const SizedBox(height: 10),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            for (final f in _Filter.values)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: ChoiceChip(
-                                  label: Text(_namaFilter[f]!),
-                                  selected: _filter == f,
-                                  showCheckmark: true,
-                                  selectedColor: AppColors.sage,
-                                  backgroundColor: AppColors.fieldGrey,
-                                  side: BorderSide.none,
-                                  onSelected: (_) =>
-                                      setState(() => _filter = f),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Expanded(
-                        child: daftar.isEmpty
-                            ? const Center(
-                          child: Text(
-                              'Makanan tidak ditemukan.\nTambahkan sendiri di bawah.',
-                              textAlign: TextAlign.center,
-                              style:
-                              TextStyle(color: AppColors.textHint)),
-                        )
-                            : ListView.separated(
-                          itemCount: daftar.length,
-                          separatorBuilder: (_, __) => Divider(
-                              height: 1,
-                              color:
-                              AppColors.sageLight.withOpacity(0.7)),
-                          itemBuilder: (_, i) => _baris(daftar[i]),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton.icon(
-                          onPressed: _tambahSendiri,
-                          icon: const Icon(Icons.add),
-                          label: const Text('Tambah makanan sendiri'),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+              return Column(
+                children: [
+                  Text('Pilih makanan • ${widget.waktu}',
+                      style: serif(size: AppText.subtitle)),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _cari,
+                    onChanged: (v) => setState(() => _q = v.trim()),
+                    decoration: const InputDecoration(
+                        hintText: 'Cari dari rekomendasi atau komunitas...',
+                        prefixIcon: Icon(Icons.search)),
+                  ),
+                  const SizedBox(height: 10),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (final f in _Filter.values)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                              label: Text(_namaFilter[f]!),
+                              selected: _filter == f,
+                              showCheckmark: true,
+                              selectedColor: AppColors.sage,
+                              backgroundColor: AppColors.fieldGrey,
+                              side: BorderSide.none,
+                              onSelected: (_) => setState(() => _filter = f),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Expanded(
+                    child: daftar.isEmpty
+                        ? const Center(
+                      child: Text(
+                          'Makanan tidak ditemukan di rekomendasi maupun resep komunitas.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: AppColors.textHint)),
+                    )
+                        : ListView.separated(
+                      itemCount: daftar.length,
+                      separatorBuilder: (_, __) => Divider(
+                          height: 1,
+                          color: AppColors.sageLight.withOpacity(0.7)),
+                      itemBuilder: (_, i) => _baris(daftar[i]),
+                    ),
+                  ),
+                ],
               );
             },
           ),
