@@ -46,7 +46,16 @@ class _HomeScreenState extends State<HomeScreen> {
     final n = DateTime.now();
     return DateTime(n.year, n.month, n.day + _offset);
   }
+  /// Nama makanan katalog admin (untuk menangani catatan lama
+  /// yang tersimpan sebelum field dariAdmin ada).
+  static final _namaKatalog = {
+    for (final k in BmiUtils.katalog) k.nama.toLowerCase(),
+  };
 
+  /// Makanan dari admin tidak boleh diubah kalorinya oleh user.
+  /// Makanan input user sendiri (seperti kimbab) boleh diedit.
+  bool _bisaDiedit(FoodLog f) =>
+      !f.dariAdmin && !_namaKatalog.contains(f.nama.trim().toLowerCase());
   void _geser(int delta) {
     final baru = (_offset + delta).clamp(-_batasHari, _batasHari).toInt();
     if (baru == _offset) return;
@@ -109,22 +118,26 @@ class _HomeScreenState extends State<HomeScreen> {
                       _KalorGauge(target: target, konsumsi: konsumsi),
                       const SizedBox(height: 14),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _kotakInfo(
-                            'Skor BMI',
-                            latest == null ? '-' : BmiUtils.fmt1(latest.bmi),
-                            latest == null
-                                ? AppColors.fieldGrey
-                                : BmiUtils.warna(latest.kategori)
-                                .withOpacity(0.6),
-                            sub: latest?.kategori,
+                          Expanded(
+                            child: _kotakInfo(
+                              'Skor BMI',
+                              latest == null ? '-' : BmiUtils.fmt1(latest.bmi),
+                              latest == null
+                                  ? AppColors.fieldGrey
+                                  : BmiUtils.warna(latest.kategori)
+                                  .withValues(alpha: 0.6),
+                              sub: latest?.kategori,
+                            ),
                           ),
-                          _kotakInfo(
-                            'Goal',
-                            target == null ? '-' : '$target kkal',
-                            AppColors.sageLight.withOpacity(0.6),
-                            sub: 'Dimakan: $konsumsi kkal',
+                          const SizedBox(width: 14), // jarak antar kotak
+                          Expanded(
+                            child: _kotakInfo(
+                              'Goal',
+                              target == null ? '-' : '$target kkal',
+                              AppColors.sageLight.withValues(alpha: 0.6),
+                              sub: 'Dimakan: $konsumsi kkal',
+                            ),
                           ),
                         ],
                       ),
@@ -198,7 +211,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _kotakInfo(String label, String value, Color warna, {String? sub}) {
     return Container(
-      width: 140,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
           color: warna, borderRadius: BorderRadius.circular(16)),
@@ -208,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(label,
               style: TextStyle(
                   fontSize: AppText.small,
-                  color: AppColors.textDark.withOpacity(0.75))),
+                  color: AppColors.textDark.withValues(alpha: 0.75))),
           const SizedBox(height: 2),
           Text(value, style: serif(size: AppText.subtitle)),
           if (sub != null) ...[
@@ -218,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                     fontSize: AppText.caption,
-                    color: AppColors.textDark.withOpacity(0.7))),
+                    color: AppColors.textDark.withValues(alpha: 0.7))),
           ],
         ],
       ),
@@ -237,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
         border: Border.all(color: AppColors.sageLight),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -254,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                      color: AppColors.sageLight.withOpacity(0.55),
+                      color: AppColors.sageLight.withValues(alpha: 0.55),
                       borderRadius: BorderRadius.circular(14)),
                   child: Icon(_ikonWaktu[waktu], color: AppColors.sageDark),
                 ),
@@ -292,14 +304,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ---------- Satu makanan: gambar, nama, kkal, - jumlah +, hapus ----------
   Widget _itemRow(FoodLog f, String waktu) {
+    final bisaEdit = _bisaDiedit(f);
+
     return Container(
       decoration: BoxDecoration(
         border: Border(
-            top: BorderSide(color: AppColors.sageLight.withOpacity(0.6))),
+            top: BorderSide(color: AppColors.sageLight.withValues(alpha: 0.6))),
       ),
       child: InkWell(
-        onTap: () => showFoodDialog(context,
-            waktu: waktu, existing: f, tanggal: _tanggal),
+        onTap: bisaEdit
+            ? () => showFoodDialog(context,
+            waktu: waktu, existing: f, tanggal: _tanggal)
+            : null,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
           child: Row(
@@ -456,7 +472,7 @@ class _KalorGauge extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-                color: warna.withOpacity(0.28),
+                color: warna.withValues(alpha: 0.28),
                 borderRadius: BorderRadius.circular(20)),
             child: Text(status,
                 style: const TextStyle(

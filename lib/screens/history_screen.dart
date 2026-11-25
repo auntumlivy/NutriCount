@@ -36,6 +36,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             stream: _userS,
             builder: (context, userSnap) {
               final target = (userSnap.data?['targetBerat'] as num?)?.toDouble();
+              final awal = (userSnap.data?['beratAwal'] as num?)?.toDouble() ??
+                  (records.isEmpty ? null : records.last.berat);
               return StreamBuilder<List<FoodLog>>(
                 stream: _logS,
                 builder: (context, logSnap) {
@@ -43,7 +45,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   return ListView(
                     padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
                     children: [
-                      _beratCard(latest, target),
+                      _beratCard(latest, target, awal),
                       const SizedBox(height: 18),
                       _bmiCard(latest),
                       const SizedBox(height: 22),
@@ -71,8 +73,40 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  // ---------- Kartu berat badan + tombol edit (Update) ----------
-  Widget _beratCard(BmiRecord? latest, double? target) {
+  // ---------- Kartu berat badan + progres target + tombol edit ----------
+  Widget _beratCard(BmiRecord? latest, double? target, double? awal) {
+    final sekarang = latest?.berat;
+    final adaTarget = target != null && sekarang != null;
+
+    double progres = 0;
+    bool tercapai = false;
+    bool menjauh = false;
+    String teksSisa = '';
+
+    if (adaTarget) {
+      final mulai = awal ?? sekarang;
+      final naik = target > mulai; // true = target menaikkan berat
+      final total = (target - mulai).abs();
+      final maju = naik ? sekarang - mulai : mulai - sekarang;
+
+      tercapai = naik ? sekarang >= target : sekarang <= target;
+      menjauh = !tercapai && maju < 0;
+      progres = tercapai
+          ? 1.0
+          : (total < 0.1 ? 0.0 : (maju / total).clamp(0.0, 1.0).toDouble());
+
+      final sisa = (target - sekarang).abs();
+      if (tercapai) {
+        teksSisa = 'Target tercapai';
+      } else if (menjauh) {
+        teksSisa = 'Berat bergerak menjauhi target';
+      } else {
+        teksSisa = naik
+            ? 'Naik ${BmiUtils.fmtKg(sisa)} kg lagi'
+            : 'Turun ${BmiUtils.fmtKg(sisa)} kg lagi';
+      }
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -94,14 +128,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             ? '- kg'
                             : '${BmiUtils.fmtKg(latest.berat)} kg',
                         style: const TextStyle(
-                            fontSize: AppText.title, fontWeight: FontWeight.w700)),
+                            fontSize: AppText.title,
+                            fontWeight: FontWeight.w700)),
                     const SizedBox(height: 4),
                     Text(
                         target == null
                             ? 'Target - kg'
                             : 'Target ${BmiUtils.fmtKg(target)} kg',
                         style: const TextStyle(
-                            fontSize: AppText.title, fontWeight: FontWeight.w700)),
+                            fontSize: AppText.title,
+                            fontWeight: FontWeight.w700)),
                   ],
                 ),
               ),
@@ -119,6 +155,35 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 14),
+          if (adaTarget) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: progres,
+                minHeight: 10,
+                backgroundColor: AppColors.fieldGrey,
+                color: tercapai ? const Color(0xFF7BC47F) : AppColors.sageDark,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(teksSisa,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: AppText.small)),
+                Text('${(progres * 100).round()}% menuju target',
+                    style: const TextStyle(
+                        color: AppColors.textHint, fontSize: AppText.small)),
+              ],
+            ),
+          ] else
+            const Text(
+                'Atur target berat lewat tombol di atas untuk melihat progresmu.',
+                style: TextStyle(
+                    color: AppColors.textHint, fontSize: AppText.small)),
         ],
       ),
     );
@@ -176,7 +241,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
           {'berat': newB, 'bmi': bmi, 'kategori': BmiUtils.kategori(bmi)});
     }
     if (newT != null && newT > 0) {
-      await _fs.updateUser({'targetBerat': newT});
+      final data = <String, dynamic>{'targetBerat': newT};
+      // Titik awal progres = berat saat target dibuat / diganti.
+      if (newT != target) {
+        final awalBaru = (newB != null && newB > 0) ? newB : latest?.berat;
+        if (awalBaru != null) data['beratAwal'] = awalBaru;
+      }
+      await _fs.updateUser(data);
     }
   }
 
@@ -285,7 +356,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 barWidth: 3,
                 dotData: const FlDotData(show: true),
                 belowBarData: BarAreaData(
-                    show: true, color: AppColors.sageLight.withOpacity(0.35)),
+                    show: true, color: AppColors.sageLight.withValues(alpha: 0.35)),
               ),
             ],
           ),
@@ -300,7 +371,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.fromLTRB(14, 8, 4, 8),
       decoration: BoxDecoration(
-          color: BmiUtils.warna(r.kategori).withOpacity(0.35),
+          color: BmiUtils.warna(r.kategori).withValues(alpha: 0.35),
           borderRadius: BorderRadius.circular(12)),
       child: Row(
         children: [

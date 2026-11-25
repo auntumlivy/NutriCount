@@ -154,7 +154,8 @@ class LocalService implements DataService {
         foto: f.foto,
         waktu: f.waktu,
         hari: f.hari,
-        tanggal: f.tanggal)
+        tanggal: f.tanggal,
+        dariAdmin: f.dariAdmin)
         : f)
         .toList());
   }
@@ -171,7 +172,8 @@ class LocalService implements DataService {
         foto: f.foto,
         waktu: f.waktu,
         hari: f.hari,
-        tanggal: f.tanggal)
+        tanggal: f.tanggal,
+        dariAdmin: f.dariAdmin)
         : f)
         .toList());
   }
