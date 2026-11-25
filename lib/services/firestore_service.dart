@@ -1,3 +1,4 @@
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/models.dart';
@@ -103,7 +104,12 @@ class FirestoreService implements DataService {
   bool get bisaKeluar => true;
 
   @override
-  Future<void> keluar() => FirebaseAuth.instance.signOut();
+  Future<void> keluar() async {
+    try {
+      await GoogleSignIn().signOut();
+    } catch (_) {}
+    await FirebaseAuth.instance.signOut();
+  }
 
   // ---------- USER ----------
   @override
