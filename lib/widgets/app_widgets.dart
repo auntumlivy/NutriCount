@@ -144,25 +144,34 @@ class AddCircleButton extends StatelessWidget {
 }
 
 /// Kartu makanan (emoji sebagai pengganti foto; ganti dengan Image.asset jika punya foto).
+
+/// Kartu makanan dengan foto Cloudinary atau emoji sebagai fallback.
 class FoodCard extends StatelessWidget {
   final String nama;
   final String emoji;
   final int? kalori;
   final double size;
+  final String foto;
 
-  const FoodCard(
-      {super.key,
-      required this.nama,
-      required this.emoji,
-      this.kalori,
-      this.size = 140});
+  const FoodCard({
+    super.key,
+    required this.nama,
+    required this.emoji,
+    this.kalori,
+    this.size = 140,
+    this.foto = '',
+  });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(18),
-      onTap: () =>
-          showFoodDetail(context, nama: nama, emoji: emoji, kalori: kalori),
+      onTap: () => showFoodDetail(
+        context,
+        nama: nama,
+        emoji: emoji,
+        kalori: kalori,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -170,25 +179,48 @@ class FoodCard extends StatelessWidget {
             width: size,
             height: size,
             alignment: Alignment.center,
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-                color: AppColors.sageLight.withOpacity(0.55),
-                borderRadius: BorderRadius.circular(18)),
-            child: Text(emoji, style: TextStyle(fontSize: size * 0.42)),
+              color: AppColors.sageLight.withOpacity(0.55),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: foto.isNotEmpty
+                ? Image.network(
+                    foto,
+                    width: size,
+                    height: size,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Text(
+                      emoji,
+                      style: TextStyle(fontSize: size * 0.42),
+                    ),
+                  )
+                : Text(
+                    emoji,
+                    style: TextStyle(fontSize: size * 0.42),
+                  ),
           ),
           const SizedBox(height: 8),
           SizedBox(
             width: size,
-            child: Text(nama,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: serif(
-                    size: size < 110 ? AppText.caption : AppText.body)),
+            child: Text(
+              nama,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: serif(
+                size: size < 110 ? AppText.caption : AppText.body,
+              ),
+            ),
           ),
           if (kalori != null)
-            Text('±$kalori kkal',
-                style: const TextStyle(
-                    color: AppColors.textHint, fontSize: AppText.small)),
+            Text(
+              '±$kalori kkal',
+              style: const TextStyle(
+                color: AppColors.textHint,
+                fontSize: AppText.small,
+              ),
+            ),
         ],
       ),
     );

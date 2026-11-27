@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'admin_account_screen.dart';
 import 'admin_home_screen.dart';
 import 'admin_recipes_screen.dart';
+import 'admin_recommendation_screen.dart';
 
 /// Kerangka halaman admin (beranda, kelola resep, akun).
 /// Terpisah dari MainShell milik pengguna.
@@ -23,6 +24,7 @@ class _AdminShellState extends State<AdminShell> {
         children: [
           AdminHomeScreen(onLihatSemua: () => setState(() => _index = 1)),
           const AdminRecipesScreen(),
+          const AdminRecommendationScreen(),
           const AdminAccountScreen(),
         ],
       ),

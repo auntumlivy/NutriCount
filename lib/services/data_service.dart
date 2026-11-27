@@ -53,7 +53,27 @@ abstract class DataService {
   // ---------- KHUSUS ADMIN ----------
   /// Semua resep, semua status (untuk dashboard dan kelola resep admin).
   Stream<List<Recipe>> allRecipesStream();
-
   /// Admin menerbitkan resep langsung (status langsung "approved").
   Future<void> adminAddRecipe(Recipe r);
+  /// Resep yang diterbitkan admin untuk ditampilkan di Food Recommendations.
+  Stream<List<Recipe>> adminRecipesStream();
+    // ---------- REKOMENDASI MAKANAN BMI ----------
+
+  /// Admin menambahkan rekomendasi makanan.
+  Future<void> addFoodRecommendation(FoodRecommendation r);
+
+  /// Mengambil rekomendasi makanan berdasarkan kategori BMI.
+  Stream<List<FoodRecommendation>> foodRecommendationsStream(String kategori);
+
+  /// Mengambil semua rekomendasi makanan untuk halaman kelola admin.
+  Stream<List<FoodRecommendation>> allFoodRecommendationsStream();
+
+  /// Admin mengubah rekomendasi makanan.
+  Future<void> updateFoodRecommendation(
+    String id,
+    FoodRecommendation r,
+  );
+
+  /// Admin menghapus rekomendasi makanan.
+  Future<void> deleteFoodRecommendation(String id);
 }

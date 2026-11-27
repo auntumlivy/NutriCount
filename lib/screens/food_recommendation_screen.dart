@@ -51,7 +51,6 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
             final latest = data.isEmpty ? null : data.first;
             final aktif =
                 _pilih ?? widget.kategori ?? latest?.kategori ?? 'Normal';
-            final foods = BmiUtils.makananUntuk(aktif);
             final targetKalori =
                 widget.targetKalori ?? latest?.kalori;
 
@@ -191,25 +190,73 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
                             fontSize: AppText.small)),
                   ),
                 ),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-                  sliver: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 22,
-                      crossAxisSpacing: 16,
-                      childAspectRatio: 0.66,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (_, i) => FoodCard(
-                        nama: foods[i].nama,
-                        emoji: foods[i].emoji,
-                        kalori: foods[i].kalori,
-                        size: 136,
+                StreamBuilder<List<FoodRecommendation>>(
+                  stream: _fs.foodRecommendationsStream(aktif),
+                  builder: (context, foodSnap) {
+                    if (foodSnap.connectionState == ConnectionState.waiting) {
+                      return const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      );
+                    }
+
+                    if (foodSnap.hasError) {
+                      return SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Center(
+                            child: Text(
+                              'Gagal memuat rekomendasi: ${foodSnap.error}',
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    final foods = foodSnap.data ?? [];
+
+                    if (foods.isEmpty) {
+                      return const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Center(
+                            child: Text(
+                              'Belum ada rekomendasi makanan untuk kategori ini.',
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                      sliver: SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 22,
+                          crossAxisSpacing: 16,
+                          childAspectRatio: 0.66,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, i) => FoodCard(
+                            nama: foods[i].nama,
+                            emoji: foods[i].emoji,
+                            kalori: foods[i].kalori,
+                            foto: foods[i].foto,
+                            size: 136,
+                          ),
+                          childCount: foods.length,
+                        ),
                       ),
-                      childCount: foods.length,
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ],
             );

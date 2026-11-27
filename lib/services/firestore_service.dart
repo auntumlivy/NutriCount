@@ -68,6 +68,21 @@ Recipe _recipeFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
   );
 }
 
+FoodRecommendation _foodRecommendationFromDoc(
+  DocumentSnapshot<Map<String, dynamic>> d,
+) {
+  final m = d.data()!;
+
+  return FoodRecommendation(
+    id: d.id,
+    nama: m['nama'] ?? '',
+    kalori: (m['kalori'] ?? 0).toInt(),
+    kategori: m['kategori'] ?? 'Normal',
+    foto: m['foto'] ?? '',
+    emoji: m['emoji'] ?? '🍽️',
+  );
+}
+
 /// Penyimpanan di Firebase Firestore (dipakai oleh lib/main_firebase.dart):
 /// users/{uid}
 /// users/{uid}/bmi_records/{id}
@@ -176,14 +191,29 @@ class FirestoreService implements DataService {
   CollectionReference<Map<String, dynamic>> get _recipes =>
       _db.collection('recipes');
 
+  // ---------- REKOMENDASI MAKANAN BMI ----------
+  CollectionReference<Map<String, dynamic>> get _foodRecommendations =>
+      _db.collection('food_recommendations');
+
   // Diurutkan di sisi aplikasi supaya tidak butuh composite index Firestore.
-  Stream<List<Recipe>> _recipeStream(Query<Map<String, dynamic>> q,
-      {bool terbaruDulu = true}) =>
+  Stream<List<Recipe>> _recipeStream(
+    Query<Map<String, dynamic>> q, {
+    bool terbaruDulu = true,
+    bool kecualikanAdmin = false,
+  }) =>
       q.snapshots().map((s) {
-        final list = s.docs.map(_recipeFromDoc).toList();
+        final docs = kecualikanAdmin
+            ? s.docs
+                .where((d) => d.data()['jenisPembuat'] != 'admin')
+                .toList()
+            : s.docs;
+
+        final list = docs.map(_recipeFromDoc).toList();
+
         list.sort((a, b) => terbaruDulu
             ? b.dibuat.compareTo(a.dibuat)
             : a.dibuat.compareTo(b.dibuat));
+
         return list;
       });
 
@@ -204,8 +234,10 @@ class FirestoreService implements DataService {
   });
 
   @override
-  Stream<List<Recipe>> approvedRecipesStream() =>
-      _recipeStream(_recipes.where('status', isEqualTo: RecipeStatus.approved));
+  Stream<List<Recipe>> approvedRecipesStream() => _recipeStream(
+        _recipes.where('status', isEqualTo: RecipeStatus.approved),
+        kecualikanAdmin: true,
+      );
 
   @override
   Stream<List<Recipe>> myRecipesStream() =>
@@ -233,6 +265,11 @@ class FirestoreService implements DataService {
   Stream<List<Recipe>> allRecipesStream() => _recipeStream(_recipes);
 
   @override
+  Stream<List<Recipe>> adminRecipesStream() => _recipeStream(
+    _recipes.where('jenisPembuat', isEqualTo: 'admin'),
+  );
+
+  @override
   Future<void> adminAddRecipe(Recipe r) => _recipes.add({
     'judul': r.judul,
     'deskripsi': r.deskripsi,
@@ -240,12 +277,63 @@ class FirestoreService implements DataService {
     'langkah': r.langkah,
     'kalori': r.kalori,
     'sumberUrl': r.sumberUrl,
-    'foto': r.foto, // <-- BARU
+    'foto': r.foto,
     'uid': _uid,
     'namaPembuat': r.namaPembuat,
+    'jenisPembuat': 'admin',
     'status': RecipeStatus.approved,
     'alasanTolak': '',
     'dibuat': Timestamp.now(),
     'ditinjau': Timestamp.now(),
   });
+    // ---------- KELOLA REKOMENDASI MAKANAN BMI ----------
+
+  @override
+  Future<void> addFoodRecommendation(FoodRecommendation r) =>
+      _foodRecommendations.add({
+        'nama': r.nama,
+        'kalori': r.kalori,
+        'kategori': r.kategori,
+        'foto': r.foto,
+        'emoji': r.emoji,
+        'dibuat': Timestamp.now(),
+      });
+
+  @override
+  Stream<List<FoodRecommendation>> foodRecommendationsStream(
+    String kategori,
+  ) =>
+      _foodRecommendations
+          .where('kategori', isEqualTo: kategori)
+          .snapshots()
+          .map(
+            (s) => s.docs
+                .map(_foodRecommendationFromDoc)
+                .toList(),
+          );
+
+  @override
+  Stream<List<FoodRecommendation>> allFoodRecommendationsStream() =>
+      _foodRecommendations.snapshots().map(
+            (s) => s.docs
+                .map(_foodRecommendationFromDoc)
+                .toList(),
+          );
+
+  @override
+  Future<void> updateFoodRecommendation(
+    String id,
+    FoodRecommendation r,
+  ) =>
+      _foodRecommendations.doc(id).update({
+        'nama': r.nama,
+        'kalori': r.kalori,
+        'kategori': r.kategori,
+        'foto': r.foto,
+        'emoji': r.emoji,
+      });
+
+  @override
+  Future<void> deleteFoodRecommendation(String id) =>
+      _foodRecommendations.doc(id).delete();
 }
