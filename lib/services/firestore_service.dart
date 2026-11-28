@@ -77,6 +77,21 @@ Recipe _recipeFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
   );
 }
 
+FoodRecommendation _foodRecommendationFromDoc(
+  DocumentSnapshot<Map<String, dynamic>> d,
+) {
+  final m = d.data()!;
+
+  return FoodRecommendation(
+    id: d.id,
+    nama: m['nama'] ?? '',
+    kalori: (m['kalori'] ?? 0).toInt(),
+    kategori: m['kategori'] ?? 'Normal',
+    foto: m['foto'] ?? '',
+    emoji: m['emoji'] ?? '🍽️',
+  );
+}
+
 /// Penyimpanan di Firebase Firestore (dipakai oleh lib/main_firebase.dart):
 /// users/{uid}
 /// users/{uid}/bmi_records/{id}
@@ -194,14 +209,29 @@ class FirestoreService implements DataService {
   CollectionReference<Map<String, dynamic>> get _recipes =>
       _db.collection('recipes');
 
+  // ---------- REKOMENDASI MAKANAN BMI ----------
+  CollectionReference<Map<String, dynamic>> get _foodRecommendations =>
+      _db.collection('food_recommendations');
+
   // Diurutkan di sisi aplikasi supaya tidak butuh composite index Firestore.
-  Stream<List<Recipe>> _recipeStream(Query<Map<String, dynamic>> q,
-      {bool terbaruDulu = true}) =>
+  Stream<List<Recipe>> _recipeStream(
+    Query<Map<String, dynamic>> q, {
+    bool terbaruDulu = true,
+    bool kecualikanAdmin = false,
+  }) =>
       q.snapshots().map((s) {
-        final list = s.docs.map(_recipeFromDoc).toList();
+        final docs = kecualikanAdmin
+            ? s.docs
+                .where((d) => d.data()['jenisPembuat'] != 'admin')
+                .toList()
+            : s.docs;
+
+        final list = docs.map(_recipeFromDoc).toList();
+
         list.sort((a, b) => terbaruDulu
             ? b.dibuat.compareTo(a.dibuat)
             : a.dibuat.compareTo(b.dibuat));
+
         return list;
       });
 
@@ -223,8 +253,10 @@ class FirestoreService implements DataService {
   });
 
   @override
-  Stream<List<Recipe>> approvedRecipesStream() =>
-      _recipeStream(_recipes.where('status', isEqualTo: RecipeStatus.approved));
+  Stream<List<Recipe>> approvedRecipesStream() => _recipeStream(
+        _recipes.where('status', isEqualTo: RecipeStatus.approved),
+        kecualikanAdmin: true,
+      );
 
   @override
   Stream<List<Recipe>> myRecipesStream() =>
@@ -252,6 +284,11 @@ class FirestoreService implements DataService {
   Stream<List<Recipe>> allRecipesStream() => _recipeStream(_recipes);
 
   @override
+  Stream<List<Recipe>> adminRecipesStream() => _recipeStream(
+    _recipes.where('jenisPembuat', isEqualTo: 'admin'),
+  );
+
+  @override
   Future<void> adminAddRecipe(Recipe r) => _recipes.add({
     'judul': r.judul,
     'deskripsi': r.deskripsi,
@@ -263,6 +300,7 @@ class FirestoreService implements DataService {
     'foto': r.foto,
     'uid': _uid,
     'namaPembuat': r.namaPembuat,
+    'jenisPembuat': 'admin',
     'status': RecipeStatus.approved,
     'alasanTolak': '',
     'dibuat': Timestamp.now(),

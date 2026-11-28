@@ -151,6 +151,7 @@ class FoodCard extends StatelessWidget {
   final String emoji;
   final int? kalori;
   final double size;
+  final String foto;
 
   const FoodCard(
       {super.key,

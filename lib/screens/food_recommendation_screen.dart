@@ -55,7 +55,6 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
             final latest = data.isEmpty ? null : data.first;
             final aktif =
                 _pilih ?? widget.kategori ?? latest?.kategori ?? 'Normal';
-            final foods = BmiUtils.makananUntuk(aktif);
             final targetKalori =
                 widget.targetKalori ?? latest?.kalori;
 
@@ -204,9 +203,8 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
                         kalori: foods[i].kalori,
                         size: 136,
                       ),
-                      childCount: foods.length,
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ],
             );

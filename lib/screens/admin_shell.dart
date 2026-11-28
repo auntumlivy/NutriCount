@@ -24,6 +24,7 @@ class _AdminShellState extends State<AdminShell> {
         children: [
           AdminHomeScreen(onLihatSemua: () => setState(() => _index = 1)),
           const AdminRecipesScreen(),
+          const AdminRecommendationScreen(),
           const AdminAccountScreen(),
         ],
       ),
