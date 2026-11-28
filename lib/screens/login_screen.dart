@@ -187,13 +187,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _tombolGoogle() {
     return SizedBox(
-      width: 240,
+      width: double.infinity,
       height: 52,
       child: OutlinedButton(
         onPressed: _sedangProses ? null : _loginGoogle,
         style: OutlinedButton.styleFrom(
           backgroundColor: Colors.white,
           foregroundColor: AppColors.textDark,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           side: const BorderSide(color: AppColors.sage, width: 1.5),
           shape: const StadiumBorder(),
         ),
@@ -206,6 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
         )
             : Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 24,
@@ -225,12 +227,15 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const SizedBox(width: 10),
-            Text(
-              'Masuk dengan Google',
-              style: serif(
-                size: AppText.body,
-                weight: FontWeight.w600,
-                color: AppColors.textDark,
+            Flexible(
+              child: Text(
+                'Masuk dengan Google',
+                overflow: TextOverflow.ellipsis,
+                style: serif(
+                  size: AppText.body,
+                  weight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
               ),
             ),
           ],
