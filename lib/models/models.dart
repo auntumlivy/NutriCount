@@ -60,6 +60,25 @@ class FoodItem {
   const FoodItem(this.nama, this.emoji, this.kalori, {this.id});
 }
 
+/// Rekomendasi makanan yang dikelola admin.
+class FoodRecommendation {
+  final String id;
+  final String nama;
+  final int kalori;
+  final String kategori;
+  final String foto;
+  final String emoji;
+
+  const FoodRecommendation({
+    this.id = '',
+    required this.nama,
+    required this.kalori,
+    required this.kategori,
+    this.foto = '',
+    this.emoji = '🍽️',
+  });
+}
+
 /// Status resep kiriman user.
 class RecipeStatus {
   static const pending = 'pending';
@@ -101,9 +120,11 @@ class Recipe {
     required this.dibuat,
   });
 
+  
   Recipe copyWith({
     String? id,
     String? uid,
+    String? namaPembuat,
     String? status,
     String? alasanTolak,
     String? kategoriBMI,
@@ -119,7 +140,7 @@ class Recipe {
         sumberUrl: sumberUrl,
         foto: foto,
         uid: uid ?? this.uid,
-        namaPembuat: namaPembuat,
+        namaPembuat: namaPembuat ?? this.namaPembuat,
         status: status ?? this.status,
         alasanTolak: alasanTolak ?? this.alasanTolak,
         dibuat: dibuat,

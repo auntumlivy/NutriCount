@@ -28,6 +28,7 @@ class LocalService implements DataService {
   final _logs = _Store<FoodLog>();
   final _custom = _Store<FoodItem>();
   final _recipes = _Store<Recipe>();
+  final _foodRecommendations = _Store<FoodRecommendation>();
 
   Map<String, dynamic> _user = {
     'nama': '',
@@ -218,7 +219,12 @@ class LocalService implements DataService {
 
   @override
   Stream<List<Recipe>> approvedRecipesStream() => _recipes.watch().map(
-      (l) => l.where((r) => r.status == RecipeStatus.approved).toList());
+    (l) => l
+        .where((r) =>
+            r.status == RecipeStatus.approved &&
+            r.namaPembuat != 'Admin')
+        .toList(),
+  );
 
   @override
   Stream<List<Recipe>> myRecipesStream() => _recipes.watch();
@@ -251,8 +257,77 @@ class LocalService implements DataService {
   @override
   Future<void> adminAddRecipe(Recipe r) async {
     _recipes.set([
-      r.copyWith(id: _id(), uid: 'lokal', status: RecipeStatus.approved),
+      r.copyWith(
+        id: _id(),
+        uid: 'lokal',
+        namaPembuat: 'Admin',
+        status: RecipeStatus.approved,
+      ),
       ..._recipes.items,
     ]);
+  }
+  @override
+  Stream<List<Recipe>> adminRecipesStream() => _recipes.watch().map(
+    (l) => l
+        .where((r) =>
+            r.status == RecipeStatus.approved &&
+            r.namaPembuat == 'Admin')
+        .toList(),
+  );
+    // ---------- REKOMENDASI MAKANAN BMI ----------
+
+  @override
+  Future<void> addFoodRecommendation(FoodRecommendation r) async {
+    _foodRecommendations.set([
+      FoodRecommendation(
+        id: _id(),
+        nama: r.nama,
+        kalori: r.kalori,
+        kategori: r.kategori,
+        foto: r.foto,
+        emoji: r.emoji,
+      ),
+      ..._foodRecommendations.items,
+    ]);
+  }
+
+  @override
+  Stream<List<FoodRecommendation>> foodRecommendationsStream(
+    String kategori,
+  ) =>
+      _foodRecommendations.watch().map(
+            (l) => l.where((r) => r.kategori == kategori).toList(),
+          );
+
+  @override
+  Stream<List<FoodRecommendation>> allFoodRecommendationsStream() =>
+      _foodRecommendations.watch();
+
+  @override
+  Future<void> updateFoodRecommendation(
+    String id,
+    FoodRecommendation r,
+  ) async {
+    _foodRecommendations.set(
+      _foodRecommendations.items.map((item) {
+        if (item.id != id) return item;
+
+        return FoodRecommendation(
+          id: id,
+          nama: r.nama,
+          kalori: r.kalori,
+          kategori: r.kategori,
+          foto: r.foto,
+          emoji: r.emoji,
+        );
+      }).toList(),
+    );
+  }
+
+  @override
+  Future<void> deleteFoodRecommendation(String id) async {
+    _foodRecommendations.set(
+      _foodRecommendations.items.where((r) => r.id != id).toList(),
+    );
   }
 }
