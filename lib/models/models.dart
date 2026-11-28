@@ -26,19 +26,30 @@ class BmiRecord {
 class FoodLog {
   final String id;
   final String nama;
-  final int kalori;
+  final int kalori; // kalori PER PORSI
+  final int jumlah; // jumlah porsi (default 1)
+  final String foto; // URL foto (kosong = pakai foto rekomendasi / emoji)
   final String waktu; // Sarapan / Lunch / Dinner / Snack
   final String hari; // yyyy-MM-dd
   final DateTime tanggal;
+
+  /// true = makanan dari daftar admin / resep (kalori tidak boleh diubah user).
+  /// false = makanan input user sendiri (boleh diedit).
+  final bool dariAdmin;
 
   FoodLog({
     this.id = '',
     required this.nama,
     required this.kalori,
+    this.jumlah = 1,
+    this.foto = '',
     required this.waktu,
     required this.hari,
     required this.tanggal,
+    this.dariAdmin = false, // baru
   });
+  /// Total kalori = kalori per porsi x jumlah.
+  int get total => kalori * jumlah;
 }
 
 class FoodItem {
@@ -83,8 +94,9 @@ class Recipe {
   final List<String> bahan;
   final List<String> langkah;
   final int kalori; // per porsi
+  final String kategoriBMI; // kategori target resep
   final String sumberUrl; // link asal resep (opsional)
-  final String foto; // foto makanan dalam base64 (kosong = tanpa foto)
+  final String foto; // URL foto resep di Cloudinary (opsional)
   final String uid; // pembuat
   final String namaPembuat;
   final String status; // RecipeStatus.*
@@ -98,6 +110,7 @@ class Recipe {
     required this.bahan,
     required this.langkah,
     required this.kalori,
+    this.kategoriBMI = 'Semua Kategori',
     this.sumberUrl = '',
     this.foto = '',
     this.uid = '',
@@ -114,6 +127,7 @@ class Recipe {
     String? namaPembuat,
     String? status,
     String? alasanTolak,
+    String? kategoriBMI,
   }) =>
       Recipe(
         id: id ?? this.id,
@@ -122,6 +136,7 @@ class Recipe {
         bahan: bahan,
         langkah: langkah,
         kalori: kalori,
+        kategoriBMI: kategoriBMI ?? this.kategoriBMI,
         sumberUrl: sumberUrl,
         foto: foto,
         uid: uid ?? this.uid,
@@ -130,5 +145,4 @@ class Recipe {
         alasanTolak: alasanTolak ?? this.alasanTolak,
         dibuat: dibuat,
       );
-
 }

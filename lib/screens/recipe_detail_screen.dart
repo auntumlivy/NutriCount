@@ -5,7 +5,6 @@ import '../services/data_service.dart';
 import '../theme.dart';
 import '../widgets/app_widgets.dart';
 import '../widgets/recipe_widgets.dart';
-import '../widgets/recipe_photo.dart';
 
 /// Detail resep. Kalau [adminMode] = true dan status masih menunggu,
 /// muncul tombol Setujui / Tolak di bawah.
@@ -174,9 +173,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
         children: [
-          // <-- BARU: foto makanan (tidak tampil kalau kosong)
           if (r.foto.isNotEmpty) ...[
-            RecipePhoto(foto: r.foto, height: 220),
+            RecipePhoto(
+                data: r.foto, width: double.infinity, height: 220, radius: 16),
             const SizedBox(height: 16),
           ],
           Text(r.judul, style: serif(size: AppText.title)),
@@ -208,9 +207,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('•  ', style: TextStyle(fontSize: AppText.body)),
-                  Expanded(
-                      child: Text(b,
-                          style: const TextStyle(fontSize: AppText.body))),
+                  Expanded(child: Text(b, style: const TextStyle(fontSize: AppText.body))),
                 ],
               ),
             ),
@@ -225,11 +222,10 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                       width: 28,
                       child: Text('${i + 1}.',
                           style: const TextStyle(
-                              fontSize: AppText.body,
-                              fontWeight: FontWeight.w700))),
+                              fontSize: AppText.body, fontWeight: FontWeight.w700))),
                   Expanded(
-                      child: Text(r.langkah[i],
-                          style: const TextStyle(fontSize: AppText.body))),
+                      child:
+                      Text(r.langkah[i], style: const TextStyle(fontSize: AppText.body))),
                 ],
               ),
             ),

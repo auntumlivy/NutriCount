@@ -37,13 +37,17 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
     return Scaffold(
       appBar: dipush
           ? AppBar(
-              backgroundColor: Colors.white,
-              elevation: 0,
-              iconTheme: const IconThemeData(color: AppColors.textDark),
-              title: Text('Rekomendasi Makanan', style: serif(size: AppText.section)),
-            )
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.textDark),
+        title: Text('Rekomendasi Makanan', style: serif(size: AppText.section)),
+      )
           : null,
-      body: SafeArea(
+      body: HeaderPage(
+        tampilHeader: !dipush,
+        title: 'Rekomendasi Makanan',
+        subtitle: 'Sesuai kategori BMI-mu',
+        icon: Icons.restaurant_menu,
         child: StreamBuilder<List<BmiRecord>>(
           stream: _bmiS,
           builder: (context, snap) {
@@ -55,22 +59,22 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
                 widget.targetKalori ?? latest?.kalori;
 
             final kaloriSarapan =
-                targetKalori == null ? null : targetKalori * 0.25;
+            targetKalori == null ? null : targetKalori * 0.25;
 
             final kaloriSiang =
-                targetKalori == null ? null : targetKalori * 0.35;
+            targetKalori == null ? null : targetKalori * 0.35;
 
             final kaloriMalam =
-                targetKalori == null ? null : targetKalori * 0.30;
+            targetKalori == null ? null : targetKalori * 0.30;
 
             final kaloriSnack =
-                targetKalori == null ? null : targetKalori * 0.10;
+            targetKalori == null ? null : targetKalori * 0.10;
 
             final info = latest == null
                 ? 'Belum ada data BMI. Hitung & simpan BMI di tab BMI agar rekomendasi menyesuaikan.'
                 : (aktif == latest.kategori
-                    ? 'Kategori BMI terakhirmu: $aktif'
-                    : 'Menampilkan rekomendasi untuk kategori $aktif');
+                ? 'Kategori BMI terakhirmu: $aktif'
+                : 'Menampilkan rekomendasi untuk kategori $aktif');
 
             return CustomScrollView(
               slivers: [
@@ -115,13 +119,6 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
                 if (!dipush)
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                      child: Text('Rekomendasi Makanan', style: serif(size: AppText.title)),
-                    ),
-                  ),
-                if (!dipush)
-                  SliverToBoxAdapter(
-                    child: Padding(
                       padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
                       child: Align(
                         alignment: Alignment.centerLeft,
@@ -136,7 +133,7 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
                               context,
                               MaterialPageRoute(
                                   builder: (_) =>
-                                      const CommunityRecipesScreen())),
+                                  const CommunityRecipesScreen())),
                           icon: const Icon(Icons.groups_2_outlined, size: 20),
                           label: const Text('Resep Komunitas'),
                         ),
@@ -190,70 +187,21 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
                             fontSize: AppText.small)),
                   ),
                 ),
-                StreamBuilder<List<FoodRecommendation>>(
-                  stream: _fs.foodRecommendationsStream(aktif),
-                  builder: (context, foodSnap) {
-                    if (foodSnap.connectionState == ConnectionState.waiting) {
-                      return const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.all(32),
-                          child: Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                      );
-                    }
-
-                    if (foodSnap.hasError) {
-                      return SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Center(
-                            child: Text(
-                              'Gagal memuat rekomendasi: ${foodSnap.error}',
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-
-                    final foods = foodSnap.data ?? [];
-
-                    if (foods.isEmpty) {
-                      return const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.all(32),
-                          child: Center(
-                            child: Text(
-                              'Belum ada rekomendasi makanan untuk kategori ini.',
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-
-                    return SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-                      sliver: SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 22,
-                          crossAxisSpacing: 16,
-                          childAspectRatio: 0.66,
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, i) => FoodCard(
-                            nama: foods[i].nama,
-                            emoji: foods[i].emoji,
-                            kalori: foods[i].kalori,
-                            foto: foods[i].foto,
-                            size: 136,
-                          ),
-                          childCount: foods.length,
-                        ),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                  sliver: SliverGrid(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 22,
+                      crossAxisSpacing: 16,
+                      childAspectRatio: 0.66,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                          (_, i) => FoodCard(
+                        nama: foods[i].nama,
+                        emoji: foods[i].emoji,
+                        kalori: foods[i].kalori,
+                        size: 136,
                       ),
                     );
                   },
@@ -266,7 +214,6 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
     ); // Scaffold
   } // penutup build()
 
-  // TEMPEL FUNGSI DI SINI
   Widget _barisKalori(String label, double kalori) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -289,4 +236,4 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
     );
   }
 
-} // penutup class
+}

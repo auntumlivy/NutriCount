@@ -1,3 +1,4 @@
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/models.dart';
@@ -32,9 +33,12 @@ BmiRecord _bmiFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
 Map<String, dynamic> _logToMap(FoodLog f) => {
   'nama': f.nama,
   'kalori': f.kalori,
+  'jumlah': f.jumlah,
+  'foto': f.foto,
   'waktu': f.waktu,
   'hari': f.hari,
   'tanggal': Timestamp.fromDate(f.tanggal),
+  'dariAdmin': f.dariAdmin, // baru
 };
 
 FoodLog _logFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
@@ -43,9 +47,13 @@ FoodLog _logFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
     id: d.id,
     nama: m['nama'] ?? '',
     kalori: (m['kalori'] ?? 0).toInt(),
+    jumlah: ((m['jumlah'] ?? 1) as num).toInt(),
+    foto: m['foto'] ?? '',
     waktu: m['waktu'] ?? 'Snack',
     hari: m['hari'] ?? '',
     tanggal: (m['tanggal'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    // Data lama tanpa field dariAdmin: dianggap dari admin kalau punya foto.
+    dariAdmin: m['dariAdmin'] as bool? ?? ((m['foto'] ?? '') as String).isNotEmpty,
   );
 }
 
@@ -58,8 +66,9 @@ Recipe _recipeFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
     bahan: List<String>.from(m['bahan'] ?? const []),
     langkah: List<String>.from(m['langkah'] ?? const []),
     kalori: (m['kalori'] ?? 0).toInt(),
+    kategoriBMI: m['kategoriBMI'] ?? 'Semua Kategori',
     sumberUrl: m['sumberUrl'] ?? '',
-    foto: m['foto'] ?? '', // <-- BARU (resep lama tanpa foto tetap aman)
+    foto: m['foto'] ?? '',
     uid: m['uid'] ?? '',
     namaPembuat: m['namaPembuat'] ?? 'Anonim',
     status: m['status'] ?? RecipeStatus.pending,
@@ -110,7 +119,12 @@ class FirestoreService implements DataService {
   bool get bisaKeluar => true;
 
   @override
-  Future<void> keluar() => FirebaseAuth.instance.signOut();
+  Future<void> keluar() async {
+    try {
+      await GoogleSignIn().signOut();
+    } catch (_) {}
+    await FirebaseAuth.instance.signOut();
+  }
 
   // ---------- USER ----------
   @override
@@ -149,6 +163,10 @@ class FirestoreService implements DataService {
   @override
   Future<void> updateFood(String id, String nama, int kalori) =>
       _logs.doc(id).update({'nama': nama, 'kalori': kalori});
+
+  @override
+  Future<void> updateFoodJumlah(String id, int jumlah) =>
+      _logs.doc(id).update({'jumlah': jumlah});
 
   @override
   Future<void> deleteFood(String id) => _logs.doc(id).delete();
@@ -224,8 +242,9 @@ class FirestoreService implements DataService {
     'bahan': r.bahan,
     'langkah': r.langkah,
     'kalori': r.kalori,
+    'kategoriBMI': r.kategoriBMI,
     'sumberUrl': r.sumberUrl,
-    'foto': r.foto, // <-- BARU
+    'foto': r.foto,
     'uid': _uid,
     'namaPembuat': r.namaPembuat,
     'status': RecipeStatus.pending,
@@ -276,6 +295,7 @@ class FirestoreService implements DataService {
     'bahan': r.bahan,
     'langkah': r.langkah,
     'kalori': r.kalori,
+    'kategoriBMI': r.kategoriBMI,
     'sumberUrl': r.sumberUrl,
     'foto': r.foto,
     'uid': _uid,
@@ -286,54 +306,4 @@ class FirestoreService implements DataService {
     'dibuat': Timestamp.now(),
     'ditinjau': Timestamp.now(),
   });
-    // ---------- KELOLA REKOMENDASI MAKANAN BMI ----------
-
-  @override
-  Future<void> addFoodRecommendation(FoodRecommendation r) =>
-      _foodRecommendations.add({
-        'nama': r.nama,
-        'kalori': r.kalori,
-        'kategori': r.kategori,
-        'foto': r.foto,
-        'emoji': r.emoji,
-        'dibuat': Timestamp.now(),
-      });
-
-  @override
-  Stream<List<FoodRecommendation>> foodRecommendationsStream(
-    String kategori,
-  ) =>
-      _foodRecommendations
-          .where('kategori', isEqualTo: kategori)
-          .snapshots()
-          .map(
-            (s) => s.docs
-                .map(_foodRecommendationFromDoc)
-                .toList(),
-          );
-
-  @override
-  Stream<List<FoodRecommendation>> allFoodRecommendationsStream() =>
-      _foodRecommendations.snapshots().map(
-            (s) => s.docs
-                .map(_foodRecommendationFromDoc)
-                .toList(),
-          );
-
-  @override
-  Future<void> updateFoodRecommendation(
-    String id,
-    FoodRecommendation r,
-  ) =>
-      _foodRecommendations.doc(id).update({
-        'nama': r.nama,
-        'kalori': r.kalori,
-        'kategori': r.kategori,
-        'foto': r.foto,
-        'emoji': r.emoji,
-      });
-
-  @override
-  Future<void> deleteFoodRecommendation(String id) =>
-      _foodRecommendations.doc(id).delete();
 }

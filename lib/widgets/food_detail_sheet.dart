@@ -11,11 +11,11 @@ import 'recipe_widgets.dart';
 /// Popup detail makanan: kalori, kategori yang cocok, resep, dan
 /// resep komunitas yang terkait.
 Future<void> showFoodDetail(
-  BuildContext context, {
-  required String nama,
-  required String emoji,
-  int? kalori,
-}) {
+    BuildContext context, {
+      required String nama,
+      required String emoji,
+      int? kalori,
+    }) {
   FoodItem? item;
   for (final f in BmiUtils.katalog) {
     if (f.nama == nama) {
@@ -52,9 +52,9 @@ class _FoodDetail extends StatefulWidget {
   final ScrollController scroll;
   const _FoodDetail(
       {required this.nama,
-      required this.emoji,
-      required this.kalori,
-      required this.scroll});
+        required this.emoji,
+        required this.kalori,
+        required this.scroll});
 
   @override
   State<_FoodDetail> createState() => _FoodDetailState();
@@ -62,7 +62,7 @@ class _FoodDetail extends StatefulWidget {
 
 class _FoodDetailState extends State<_FoodDetail> {
   late final Stream<List<Recipe>> _komunitas =
-      DataService.instance.approvedRecipesStream();
+  DataService.instance.approvedRecipesStream();
 
   static const _abaikan = {
     'nasi', 'goreng', 'rebus', 'kukus', 'panggang', 'sayur', 'plain',
@@ -83,13 +83,25 @@ class _FoodDetailState extends State<_FoodDetail> {
   }
 
   Widget _bagian(String judul) => Padding(
-        padding: const EdgeInsets.only(top: 22, bottom: 10),
-        child: Text(judul, style: serif(size: AppText.subtitle)),
-      );
+    padding: const EdgeInsets.only(top: 22, bottom: 10),
+    child: Text(judul, style: serif(size: AppText.subtitle)),
+  );
+
+  Widget _emojiBox() => Container(
+    width: 140,
+    height: 140,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: AppColors.sageLight.withOpacity(0.55),
+      borderRadius: BorderRadius.circular(24),
+    ),
+    child: Text(widget.emoji, style: const TextStyle(fontSize: 56)),
+  );
 
   @override
   Widget build(BuildContext context) {
     final resep = cariResepBawaan(widget.nama);
+    final fotoUrl = kFotoMakanan[widget.nama];
     final cocok = [
       for (final k in const ['Underweight', 'Normal', 'Overweight', 'Obesitas'])
         if (BmiUtils.makananUntuk(k).any((f) => f.nama == widget.nama)) k
@@ -110,15 +122,32 @@ class _FoodDetailState extends State<_FoodDetail> {
         ),
         const SizedBox(height: 20),
         Center(
-          child: Container(
-            width: 120,
-            height: 120,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-                color: AppColors.sageLight.withOpacity(0.55),
-                borderRadius: BorderRadius.circular(24)),
-            child: Text(widget.emoji, style: const TextStyle(fontSize: 56)),
-          ),
+          child: fotoUrl != null
+              ? ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Image.network(
+              fotoUrl,
+              width: double.infinity,
+              height: 210,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, progress) {
+                if (progress == null) return child;
+                return Container(
+                  width: double.infinity,
+                  height: 210,
+                  color: AppColors.sageLight.withOpacity(0.35),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: AppColors.sageDark,
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (_, __, ___) => _emojiBox(),
+            ),
+          )
+              : _emojiBox(),
         ),
         const SizedBox(height: 16),
         Text(widget.nama,
@@ -149,7 +178,7 @@ class _FoodDetailState extends State<_FoodDetail> {
               for (final k in cocok)
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                       color: BmiUtils.warna(k),
                       borderRadius: BorderRadius.circular(20)),
@@ -185,7 +214,7 @@ class _FoodDetailState extends State<_FoodDetail> {
                       width: 28,
                       child: Text('${i + 1}.',
                           style:
-                              const TextStyle(fontWeight: FontWeight.w700))),
+                          const TextStyle(fontWeight: FontWeight.w700))),
                   Expanded(child: Text(resep.langkah[i])),
                 ],
               ),
